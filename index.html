@@ -240,6 +240,7 @@ ul.plain{padding-left:20px;margin:10px 0}ul.plain li{margin-bottom:8px}
   <section id="v-log" class="view"></section>
   <section id="v-shift" class="view"></section>
   <section id="v-analyze" class="view"></section>
+  <section id="v-sound" class="view"></section>
   <section id="v-know" class="view"></section>
   <section id="v-set" class="view"></section>
 </main>
@@ -277,7 +278,8 @@ const DEFAULTS={
                   lastTrain:"23:48", rideMin:25, stationHomeMin:5, fixedArrival:"00:18"}
     },
     reminders:{bath:true, caffeine:true},
-    nightMode:"auto"                // auto(23-5時に自動で落ち着かせる) | on | off
+    nightMode:"auto",               // auto(23-5時に自動で落ち着かせる) | on | off
+    sound:{base:210, beat:6, volume:0.14, lowPitch:false, noiseType:"white", timerMin:30}
   },
   records:{},   // date(起床日) -> rec
   shifts:{},    // date -> {place,start,end,actualEnd,gym}
@@ -285,7 +287,8 @@ const DEFAULTS={
   range:{from:null,to:null},
   game:{points:0, streak:0, insurance:1, stamps:0, cards:0, badges:[], themes:["night"], exempt:[]},
   read:{},      // articleId -> true
-  overrides:{}  // date -> {wake:"06:30"}
+  overrides:{}, // date -> {wake:"06:30"}
+  experiment:null // {testIdx, label, start, end} 自己実験モード（1つだけ）
 };
 let S=load();
 function load(){
@@ -734,8 +737,8 @@ function unlocked(a){
 const EVL={3:{c:"e3",t:"★★★ 確立"},2:{c:"e2",t:"★★ 有力"},1:{c:"e1",t:"★ 検証中"},myth:{c:"myth",t:"⚠ 俗説"}};
 
 /* ============ 描画 ============ */
-const V=["home","log","shift","analyze","know","set"];
-const TABS=[["home","☾","今夜"],["log","✎","記録"],["shift","▤","予定"],["analyze","◠","分析"],["know","▮","知識"],["set","⚙","設定"]];
+const V=["home","log","shift","analyze","sound","know","set"];
+const TABS=[["home","☾","今夜"],["log","✎","記録"],["shift","▤","予定"],["analyze","◠","分析"],["sound","♪","音"],["know","▮","知識"],["set","⚙","設定"]];
 let cur="home", openArt=null;
 function el(id){ return document.getElementById(id); }
 function h(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
@@ -757,7 +760,7 @@ function render(){
     ? `<span class="n">Lv.${lv}</span><span class="bar"><i style="width:${Math.round(into/300*100)}%"></i></span><span class="n">${pt}pt</span>`
     : "";
   if(!S.profile.onboarded){ renderOnboard(); return; }
-  ({home:renderHome,log:renderLog,shift:renderShift,analyze:renderAnalyze,know:renderKnow,set:renderSet}[cur])();
+  ({home:renderHome,log:renderLog,shift:renderShift,analyze:renderAnalyze,sound:renderSound,know:renderKnow,set:renderSet}[cur])();
 }
 
 /* ---- オンボーディング ---- */
@@ -1278,6 +1281,8 @@ function renderAnalyze(){
     <div class="suggest"><b>来週への提案</b>${h(wr.suggestion)}</div>
   </div>
 
+  ${expResultCard()}
+
   <div class="card">
     <div class="eyebrow">必要睡眠時間</div>
     <div class="big">${dur(est.value)}</div>
@@ -1416,6 +1421,185 @@ function weekChart(ds,durs,need){
   return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px">
     <line x1="0" y1="${needY}" x2="${w}" y2="${needY}" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3,3"/>
     ${bars}${labels}</svg>`;
+}
+
+/* ---- サウンド（Web Audio・音源ファイル不要） ---- */
+let AC=null, AU={playing:null,nodes:null,startedAt:null,timeoutId:null};
+function actx(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume(); return AC; }
+function soundTargetDate(){ return new Date().getHours()>=15 ? addDays(today(),1) : today(); }
+function stopSound(log){
+  if(!AU.playing) return;
+  const ctx=actx(), nodes=AU.nodes, stopType=AU.playing, startedAt=AU.startedAt;
+  try{
+    nodes.gain.gain.cancelScheduledValues(ctx.currentTime);
+    nodes.gain.gain.setValueAtTime(nodes.gain.gain.value, ctx.currentTime);
+    nodes.gain.gain.linearRampToValueAtTime(0, ctx.currentTime+0.4);
+  }catch(e){}
+  setTimeout(()=>{ (nodes.sources||[]).forEach(n=>{ try{n.stop();}catch(e){} }); },450);
+  if(AU.timeoutId) clearTimeout(AU.timeoutId);
+  if(log&&startedAt){
+    const min=Math.max(1,Math.round((Date.now()-startedAt)/60000));
+    const dd=soundTargetDate(), r=S.records[dd]||(S.records[dd]={});
+    r.soundUsed=true; r.soundType= stopType==="mono"?"monaural":(S.settings.sound.noiseType==="rain"?"rain":"white");
+    r.soundMin=(r.soundMin||0)+min; save();
+  }
+  AU={playing:null,nodes:null,startedAt:null,timeoutId:null};
+}
+function scheduleAutoStop(){
+  const min=S.settings.sound.timerMin||30;
+  AU.timeoutId=setTimeout(()=>{ stopSound(true); render(); toast("再生を終了しました"); }, min*60*1000);
+}
+function startMonaural(){
+  stopSound(false);
+  const ctx=actx(), s=S.settings.sound;
+  const base = s.lowPitch? Math.min(s.base,110) : s.base;
+  const o1=ctx.createOscillator(), o2=ctx.createOscillator(), gain=ctx.createGain();
+  o1.frequency.value=base; o2.frequency.value=base+s.beat; gain.gain.value=0;
+  o1.connect(gain); o2.connect(gain); gain.connect(ctx.destination);
+  o1.start(); o2.start();
+  gain.gain.linearRampToValueAtTime(s.volume, ctx.currentTime+1.2);
+  AU={playing:"mono",nodes:{gain,sources:[o1,o2]},startedAt:Date.now(),timeoutId:null};
+  scheduleAutoStop();
+}
+function noiseBuffer(ctx){
+  const len=ctx.sampleRate*2, buf=ctx.createBuffer(1,len,ctx.sampleRate), data=buf.getChannelData(0);
+  for(let i=0;i<len;i++) data[i]=Math.random()*2-1;
+  return buf;
+}
+function startNoise(){
+  stopSound(false);
+  const ctx=actx(), s=S.settings.sound;
+  const src=ctx.createBufferSource(); src.buffer=noiseBuffer(ctx); src.loop=true;
+  const filter=ctx.createBiquadFilter(); filter.type="lowpass"; filter.frequency.value=s.noiseType==="rain"?1800:6000;
+  const gain=ctx.createGain(); gain.gain.value=0;
+  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  src.start();
+  gain.gain.linearRampToValueAtTime(s.volume, ctx.currentTime+1.2);
+  const sources=[src];
+  if(s.noiseType==="rain"){
+    const lfo=ctx.createOscillator(), lfoGain=ctx.createGain();
+    lfo.frequency.value=0.15; lfoGain.gain.value=s.volume*0.35;
+    lfo.connect(lfoGain); lfoGain.connect(gain.gain); lfo.start();
+    sources.push(lfo);
+  }
+  AU={playing:"noise",nodes:{gain,sources},startedAt:Date.now(),timeoutId:null};
+  scheduleAutoStop();
+}
+function playWakeMelody(){
+  const ctx=actx(); let t=ctx.currentTime;
+  [523.25,659.25,783.99,1046.5].forEach(f=>{
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.frequency.value=f; o.type="sine";
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.2,t+0.05); g.gain.linearRampToValueAtTime(0,t+0.38);
+    o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.4); t+=0.3;
+  });
+}
+/* ---- 自己実験モード ---- */
+function startExperiment(idx,days){ S.experiment={testIdx:idx,label:CORR_TESTS[idx][0],start:today(),end:addDays(today(),days-1)}; save(); }
+function experimentResult(){
+  const e=S.experiment; if(!e) return null;
+  const test=CORR_TESTS[e.testIdx][1], rs=recArr();
+  const during=rs.filter(r=>r.date>=e.start&&r.date<=e.end&&r.refreshed!=null);
+  const len=Math.round((parseISO(e.end)-parseISO(e.start))/86400000)+1;
+  const beforeEnd=addDays(e.start,-1), beforeStart=addDays(e.start,-len);
+  const before=rs.filter(r=>r.date>=beforeStart&&r.date<=beforeEnd&&r.refreshed!=null);
+  const avg=a=>a.length?a.reduce((x,y)=>x+y.refreshed,0)/a.length:null;
+  return {label:CORR_TESTS[e.testIdx][0], duringAvg:avg(during), duringN:during.length,
+    adhered:during.filter(test).length, beforeAvg:avg(before), beforeN:before.length};
+}
+function expPicker(){
+  const e=S.experiment;
+  if(e&&today()<=e.end){
+    const daysLeft=Math.max(0,Math.round((parseISO(e.end)-parseISO(today()))/86400000));
+    return `<p class="small">実施中：<b>${h(e.label)}</b>／${md(e.start)}〜${md(e.end)}（あと${daysLeft}日）</p>
+      <button class="btn ghost block" style="margin-top:10px" data-expcancel="1">やめる</button>`;
+  }
+  if(e&&today()>e.end){
+    return `<p class="small">「${h(e.label)}」の実験期間が終わりました。分析タブで結果を見られます。</p>
+      <button class="btn ghost block" style="margin-top:10px" data-expcancel="1">終了して次の実験を選ぶ</button>`;
+  }
+  return `<label class="f"><span>試す条件</span><select id="exp-test">
+      ${CORR_TESTS.map((t,i)=>`<option value="${i}">${h(t[0])}</option>`).join("")}</select></label>
+    <label class="f"><span>期間</span><select id="exp-days"><option value="7">7日間</option><option value="14">14日間</option></select></label>
+    <button class="btn dawn block" style="margin-top:10px" data-expstart="1">この条件で始める</button>
+    <p class="tiny" style="margin-top:8px">期間中はいつもどおり記録をつけるだけで大丈夫です。終わったら、その前の同じ長さの期間とスッキリ度を比べます。</p>`;
+}
+function expResultCard(){
+  const e=S.experiment; if(!e) return "";
+  if(today()<=e.end) return `<div class="card"><div class="eyebrow">自己実験（実施中）</div>
+    <p class="small">「${h(e.label)}」を試しています。${md(e.start)}〜${md(e.end)}</p></div>`;
+  const r=experimentResult(), diff=(r.duringAvg!=null&&r.beforeAvg!=null)?r.duringAvg-r.beforeAvg:null;
+  return `<div class="card"><div class="eyebrow">自己実験の結果</div>
+    <p class="small" style="margin:0 0 10px"><b>${h(r.label)}</b>（${md(e.start)}〜${md(e.end)}）</p>
+    <div class="kv"><span>期間中のスッキリ度</span><b>${r.duringAvg!=null?r.duringAvg.toFixed(1):"—"} <span class="tiny">(${r.duringN}日／該当${r.adhered}日)</span></b></div>
+    <div class="kv"><span>その前の同じ長さの期間</span><b>${r.beforeAvg!=null?r.beforeAvg.toFixed(1):"—"} <span class="tiny">(${r.beforeN}日)</span></b></div>
+    ${diff!=null?`<div class="kv"><span>差</span><b style="color:${diff>0?"var(--lime)":"var(--rose)"}">${diff>0?"+":""}${diff.toFixed(1)}</b></div>`:""}
+    <p class="tiny" style="margin-top:10px">n が小さく、季節や体調など他の要因が混ざっている可能性があります。断定はできません。参考としてご覧ください。</p>
+  </div>`;
+}
+function renderSound(){
+  const s=S.settings.sound, playing=AU.playing;
+  el("v-sound").innerHTML=`
+  <div class="mast"><h2>音</h2><p>入眠と起床のための音</p></div>
+
+  <div class="card" style="background:#0F1626">
+    <div class="eyebrow">正直な注意</div>
+    <p class="small">モノラルビートの睡眠効果は、提供元のパイロット研究が主な根拠で、独立した大規模検証はまだありません。「効く」と決めつけず、使った夜と使わなかった夜のスッキリ度を比べて、自分に合うかを確かめてください。</p>
+    <p class="tiny" style="margin-top:8px">音量は控えめにしてあります。再生は設定した時間で自動的に止まります。イヤホンを着けたまま眠るのはおすすめしません。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">モノラルビート</div>
+    <label class="f"><span>音の高さ</span><select id="sd-base">
+      <option value="160" ${s.base===160?"selected":""}>低め</option>
+      <option value="210" ${s.base===210?"selected":""}>標準</option>
+      <option value="260" ${s.base===260?"selected":""}>高め</option></select></label>
+    <label class="f"><span>うなりの周波数</span><select id="sd-beat">
+      <option value="3" ${s.beat===3?"selected":""}>3Hz（ゆっくり）</option>
+      <option value="6" ${s.beat===6?"selected":""}>6Hz（標準）</option>
+      <option value="9" ${s.beat===9?"selected":""}>9Hz（速め）</option></select></label>
+    <div class="row wrap" style="margin-top:4px">
+      <button class="chip" data-sdlow="1" aria-pressed="${!!s.lowPitch}">高い音が苦手（低めの音にする）</button>
+    </div>
+    ${playing==="mono"
+      ? `<button class="btn ghost block" style="margin-top:14px" data-sdstop="1">止める</button>`
+      : `<button class="btn dawn block" style="margin-top:14px" data-sdstart="mono">再生する</button>`}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">環境音</div>
+    <label class="f"><span>種類</span><select id="sd-noise">
+      <option value="white" ${s.noiseType==="white"?"selected":""}>ホワイトノイズ</option>
+      <option value="rain" ${s.noiseType==="rain"?"selected":""}>雨音（生成音・近似）</option></select></label>
+    ${playing==="noise"
+      ? `<button class="btn ghost block" style="margin-top:10px" data-sdstop="1">止める</button>`
+      : `<button class="btn dawn block" style="margin-top:10px" data-sdstart="noise">再生する</button>`}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">音量・自動停止までの時間</div>
+    <label class="f"><span>音量</span><select id="sd-vol">
+      <option value="0.08" ${s.volume===0.08?"selected":""}>小さめ</option>
+      <option value="0.14" ${s.volume===0.14?"selected":""}>標準</option>
+      <option value="0.22" ${s.volume===0.22?"selected":""}>大きめ</option></select></label>
+    <label class="f"><span>自動で止まるまで</span><select id="sd-timer">
+      <option value="15" ${s.timerMin===15?"selected":""}>15分</option>
+      <option value="30" ${s.timerMin===30?"selected":""}>30分</option>
+      <option value="45" ${s.timerMin===45?"selected":""}>45分</option>
+      <option value="60" ${s.timerMin===60?"selected":""}>60分</option></select></label>
+    <p class="tiny" style="margin-top:8px">設定はすぐに反映され、次に再生するときから使われます。止めるたびに「入眠サウンドを使った」として今夜の記録に残ります。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">起床音のためし聴き</div>
+    <p class="small" style="margin:0 0 10px">研究では、「メロディックだ」と感じる起床音のほうが、起きた後のぼんやり感が軽い傾向があるとされています。実際のアラームはスマホ側で設定してください。ここでは音を確認できるだけです。</p>
+    <button class="btn ghost block" data-sdwake="1">鳴らしてみる</button>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">自己実験モード</div>
+    ${expPicker()}
+  </div>`;
 }
 
 /* ---- 知識 ---- */
@@ -1592,7 +1776,7 @@ function renderSet(){
 document.addEventListener("click",e=>{
   // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
   if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
-  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-tick],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-hideinstall],[data-dl],[data-export],[data-import],[data-pl]");
+  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-tick],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-hideinstall],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel]");
   if(!t) return;
   const D=t.dataset;
 
@@ -1691,6 +1875,13 @@ document.addEventListener("click",e=>{
     return; }
   if(D.import){ try{ S=merge(deep(DEFAULTS),JSON.parse(el("s-imp").value)); save(); toast("読み込みました"); render(); }
     catch(err){ toast("JSONが読めませんでした"); } return; }
+
+  if(D.sdstart){ if(D.sdstart==="mono") startMonaural(); else startNoise(); render(); return; }
+  if(D.sdstop!==undefined){ stopSound(true); toast("止めました"); render(); return; }
+  if(D.sdlow!==undefined){ S.settings.sound.lowPitch=!S.settings.sound.lowPitch; save(); render(); return; }
+  if(D.sdwake!==undefined){ playWakeMelody(); return; }
+  if(D.expstart!==undefined){ startExperiment(Number(el("exp-test").value), Number(el("exp-days").value)); toast("実験を始めました"); render(); return; }
+  if(D.expcancel!==undefined){ S.experiment=null; save(); render(); return; }
 });
 function obNext(step){
   if(step===1){
@@ -1769,6 +1960,16 @@ document.addEventListener("change",e=>{
     fr.onload=()=>{ try{ S=merge(deep(DEFAULTS),JSON.parse(fr.result)); save(); toast("バックアップから戻しました"); render(); }
       catch(err){ toast("このファイルは読めませんでした"); } };
     fr.readAsText(e.target.files[0]);
+  }
+  const id=e.target&&e.target.id;
+  if(id==="sd-base"||id==="sd-beat"||id==="sd-vol"||id==="sd-timer"||id==="sd-noise"){
+    const sd=S.settings.sound;
+    if(id==="sd-base") sd.base=Number(el("sd-base").value);
+    if(id==="sd-beat") sd.beat=Number(el("sd-beat").value);
+    if(id==="sd-vol") sd.volume=Number(el("sd-vol").value);
+    if(id==="sd-timer") sd.timerMin=Number(el("sd-timer").value);
+    if(id==="sd-noise") sd.noiseType=el("sd-noise").value;
+    save();
   }
 });
 
