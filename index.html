@@ -134,8 +134,8 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
   box-shadow:0 0 0 5px rgba(255,193,94,.18)}
 .tt li .b{font-size:16.5px;font-weight:700}
 .tt li .b em{display:block;font-style:normal;font-size:14px;font-weight:500;color:var(--ink3);margin-top:2px}
-.tt li button.tick{margin-top:7px;font-size:14px;font-weight:700;color:var(--ink2);
-  border:2px solid var(--line);background:var(--panel2);border-radius:99px;padding:7px 14px}
+.tt li button.tick{margin-top:8px;font-size:14px;font-weight:700;color:var(--ink2);
+  border:2px solid var(--line);background:var(--panel2);border-radius:99px;padding:10px 16px;min-height:40px}
 .tt li.done button.tick{color:#0F2A17;background:var(--lime);border-color:var(--lime)}
 @keyframes slide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
 
@@ -885,8 +885,19 @@ function renderHome(){
     <button class="chip" data-fix="wait">湯上がりの待ちを詰める</button>
     <button class="chip" data-fix="bed">就寝を15分遅らせる</button></div></div>`:""}
 
+  ${(()=>{ const nx=tl.find(x=>!tick[x.id]);
+    return nx ? `<div class="card" style="border-color:var(--amber);text-align:center">
+      <div class="eyebrow">つぎに</div>
+      <div class="serif" style="font-size:27px;margin:2px 0">${h(nx.b)}</div>
+      <p class="small mut" style="margin:0 0 14px">${nx.t}　${h(nx.e||"")}</p>
+      <button class="btn block" style="font-size:19px;padding:19px" data-tick="${nx.id}">できた（記録する）</button>
+    </div>` : `<div class="card" style="border-color:var(--lime);text-align:center">
+      <div class="eyebrow" style="color:var(--lime)">今夜はここまで</div>
+      <p class="small mut" style="margin:0">やることは全部終わりました。おやすみなさい。</p>
+    </div>`; })()}
+
   <div class="card">
-    <div class="eyebrow">今夜の時刻表</div>
+    <div class="eyebrow">今夜の流れ（すべて）</div>
     <ul class="tt">${tl.map((x,i)=>`<li class="${tick[x.id]?"done":""} ${x.key?"key":""}" style="animation-delay:${i*45}ms">
       <span class="t">${x.t}</span><span class="d"></span>
       <span class="b">${h(x.b)}<em>${h(x.e||"")}</em>
@@ -928,7 +939,7 @@ function renderHome(){
 }
 
 /* ---- 記録 ---- */
-let logDate=null;
+let logDate=null, logMore=false;
 function renderLog(){
   const d=logDate||today();
   const r=S.records[d]||{};
@@ -962,7 +973,10 @@ function renderLog(){
     <p class="tiny" style="margin-top:8px">「自由に寝られた日」＝目覚ましなしで自然に起きた日。必要睡眠時間の推定にいちばん効く項目です。</p>
   </div>
 
-  <div class="card">
+  <button class="btn ghost block" data-logmore="1">${logMore?"詳しい記録をたたむ ▲":"もっと記録する（バンドの数値・夜の行動など）▼"}</button>
+
+  ${!logMore?"":`
+  <div class="card" style="margin-top:14px">
     <div class="eyebrow">バンドの数値（Mi Fitness から転記）</div>
     <button class="btn dawn block" style="margin-bottom:10px" data-bandsheet="${d}">Xiaomiの画面の順に入力する</button>
     <button class="btn ghost block" data-bulksheet="1">写真を送った分をまとめて貼る</button>
@@ -1017,9 +1031,9 @@ function renderLog(){
     ${scale("sleepiness","日中の眠気（1 強い ← → 5 なし）",r.sleepiness)}
     ${scale("condition","体調（1 悪い ← → 5 良い）",r.condition)}
     ${scale("mood","気分（1 悪い ← → 5 良い）",r.mood)}
-  </div>
+  </div>`}
 
-  <button class="btn block" data-save="1">保存する</button>
+  <button class="btn block" style="margin-top:14px" data-save="1">保存する</button>
 
   ${sc?`<div class="card" style="margin-top:14px">
     <div class="eyebrow">この日のスコア</div>
@@ -1784,7 +1798,7 @@ function renderSet(){
 document.addEventListener("click",e=>{
   // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
   if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
-  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-tick],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-hideinstall],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel]");
+  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-tick],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-hideinstall],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore]");
   if(!t) return;
   const D=t.dataset;
 
@@ -1890,6 +1904,7 @@ document.addEventListener("click",e=>{
   if(D.sdwake!==undefined){ playWakeMelody(); return; }
   if(D.expstart!==undefined){ startExperiment(Number(el("exp-test").value), Number(el("exp-days").value)); toast("実験を始めました"); render(); return; }
   if(D.expcancel!==undefined){ S.experiment=null; save(); render(); return; }
+  if(D.logmore!==undefined){ logMore=!logMore; renderLog(); return; }
 });
 function obNext(step){
   if(step===1){
@@ -1918,7 +1933,7 @@ function saveLog(){
   r.inBed=g("f-inBed"); r.wake=g("f-wake"); r.latency=g("f-lat",1);
   r.awakenings=g("f-awake",1); r.bandTotal=g("f-band",1); r.deep=g("f-deep",1); r.rem=g("f-rem",1); r.bandScore=g("f-bs",1);
   r.bathEnd=g("f-bathEnd"); r.mealTime=g("f-meal"); r.caffeineTime=g("f-caf"); r.napMin=g("f-nap",1);
-  r.note=el("f-note").value;
+  if(el("f-note")) r.note=el("f-note").value;
   if(r.bathEnd&&r.inBed){ let a=night(r.bathEnd),b=night(r.inBed); if(b<a)b+=1440; r.bathWait=b-a; }
   // 約束の判定とスタンプ
   const pr=promiseResult(addDays(d,-1));
