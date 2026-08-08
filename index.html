@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101728">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ねむログ">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>ねむログ — 夜の帳簿</title>
+<style>
+:root{
+  --bg:#101728; --bg2:#16203A; --panel:#1C2848; --panel2:#243156; --line:#374775;
+  --ink:#F5F3ED; --ink2:#BEC9E2; --ink3:#8D9ABA;
+  --amber:#FFC15E; --amber2:#FF9F45; --teal:#4FD1C5; --violet:#A48BFF;
+  --rose:#FF7E6E; --lime:#8FE39A; --dawn:#79B4F0;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --r:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:17px; line-height:1.75; font-weight:500;
+  letter-spacing:.005em; -webkit-text-size-adjust:100%;
+  padding-bottom:96px; overscroll-behavior-y:none;
+}
+h1,h2,h3,h4{font-weight:800;letter-spacing:.01em;line-height:1.4;margin:0}
+.serif{font-weight:800}
+button,input,select,textarea{font-family:inherit;font-size:17px;color:inherit;font-weight:600}
+button{cursor:pointer;border:none;background:none}
+a{color:var(--dawn)}
+:focus-visible{outline:3px solid var(--dawn);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---- shell ---- */
+header.top{
+  padding:14px 18px 12px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#1A2440,#101728); position:sticky; top:0; z-index:20;
+  padding-top:max(14px,env(safe-area-inset-top));
+}
+header.top .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
+header.top .brand{font-size:21px;font-weight:800;letter-spacing:.06em}
+.lvl{display:flex;align-items:center;gap:9px;flex:1;max-width:210px}
+.lvl .n{font-size:13px;font-weight:800;color:var(--amber);white-space:nowrap}
+.lvl .bar{flex:1;height:10px;border-radius:99px;background:#0D1424;border:1px solid var(--line);overflow:hidden}
+.lvl .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber2),var(--amber));transition:width .7s ease}
+main{padding:16px 15px 8px;max-width:720px;margin:0 auto}
+nav.tabs{
+  position:fixed;bottom:0;left:0;right:0;z-index:30;display:flex;
+  background:rgba(16,23,40,.97);backdrop-filter:blur(14px);
+  border-top:1px solid var(--line); padding:8px 5px calc(8px + env(safe-area-inset-bottom));
+}
+nav.tabs button{flex:1;padding:9px 2px;color:var(--ink3);font-size:12px;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:14px;min-height:56px}
+nav.tabs button .g{font-size:21px;line-height:1}
+nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(180deg,var(--amber),var(--amber2));
+  box-shadow:0 4px 14px rgba(255,159,69,.28)}
+.view{display:none}.view.on{display:block;animation:fade .28s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---- primitives ---- */
+.card{background:linear-gradient(180deg,var(--panel),#19243F);border:1px solid var(--line);
+  border-radius:var(--r);padding:18px;margin:0 0 15px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.eyebrow{font-size:13px;font-weight:800;letter-spacing:.1em;color:var(--amber);margin:0 0 10px}
+.mut{color:var(--ink2)}
+.small{font-size:15px;line-height:1.7}
+.tiny{font-size:13.5px;color:var(--ink3);line-height:1.65;font-weight:500}
+.row{display:flex;gap:10px;align-items:center}
+.row.wrap{flex-wrap:wrap}.spread{justify-content:space-between}
+.btn{background:linear-gradient(180deg,var(--amber),var(--amber2));color:#231605;font-weight:800;
+  padding:16px 20px;border-radius:15px;letter-spacing:.02em;display:inline-block;text-align:center;
+  box-shadow:0 4px 0 #B96F22; font-size:17px}
+.btn.ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line);box-shadow:0 4px 0 rgba(0,0,0,.3)}
+.btn.dawn{background:linear-gradient(180deg,#7EC0FF,var(--dawn));color:#08182B;box-shadow:0 4px 0 #3C6E9E}
+.btn.block{display:block;width:100%}
+.btn:active{transform:translateY(3px);box-shadow:none}
+.chip{border:2px solid var(--line);background:var(--panel2);color:var(--ink2);
+  padding:11px 16px;border-radius:99px;font-size:15.5px;font-weight:700;min-height:46px}
+.chip[aria-pressed="true"]{background:linear-gradient(180deg,var(--amber),var(--amber2));
+  border-color:var(--amber);color:#231605;box-shadow:0 3px 0 #B96F22}
+label.f{display:block;margin:14px 0 0}
+label.f span{display:block;font-size:14.5px;font-weight:700;color:var(--ink2);margin-bottom:7px}
+input,select,textarea{width:100%;background:#0E1526;border:2px solid var(--line);border-radius:13px;padding:13px 14px}
+textarea{min-height:80px;resize:vertical;font-weight:500}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.divider{height:1px;background:var(--line);margin:17px 0}
+.badge{font-size:13px;font-weight:800;padding:5px 11px;border-radius:99px;
+  border:2px solid var(--line);color:var(--ink2)}
+.badge.ok{color:#0F2A17;background:var(--lime);border-color:var(--lime)}
+.badge.warn{color:#2A1B04;background:var(--amber);border-color:var(--amber)}
+.badge.bad{color:#2B0D08;background:var(--rose);border-color:var(--rose)}
+
+/* ---- signature: 時刻表 ---- */
+.hero{padding:24px 18px 20px;border:2px solid var(--line);border-radius:24px;margin-bottom:15px;
+  background:radial-gradient(130% 100% at 50% 0%,#2A3A66 0%,#1B2745 55%,#141D33 100%);
+  box-shadow:0 6px 0 rgba(0,0,0,.3)}
+.hero .label{font-size:14px;font-weight:800;letter-spacing:.14em;color:var(--amber);text-align:center}
+.hero .time{font-size:78px;font-weight:800;line-height:1;text-align:center;margin:8px 0 6px;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;
+  background:linear-gradient(180deg,#FFF6E6,var(--amber));-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent}
+.hero .note{text-align:center;font-size:14.5px;color:var(--ink2);font-weight:600}
+.hero .mode{text-align:center;margin-top:12px;display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+
+.tt{margin:4px 0 0;padding:0;list-style:none;position:relative}
+.tt:before{content:"";position:absolute;left:69px;top:16px;bottom:22px;width:3px;border-radius:3px;
+  background:linear-gradient(180deg,var(--line),rgba(55,71,117,.2))}
+.tt li{display:grid;grid-template-columns:62px 26px 1fr;align-items:start;padding:11px 0;
+  animation:slide .35s ease backwards}
+.tt li .t{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--dawn);
+  font-variant-numeric:tabular-nums;padding-top:2px}
+.tt li .d{position:relative;height:24px}
+.tt li .d:after{content:"";position:absolute;left:1px;top:6px;width:13px;height:13px;border-radius:50%;
+  background:var(--bg);border:3px solid var(--ink3)}
+.tt li.done .d:after{background:var(--lime);border-color:var(--lime)}
+.tt li.key .d:after{border-color:var(--amber);background:var(--amber);width:16px;height:16px;left:0;top:5px;
+  box-shadow:0 0 0 5px rgba(255,193,94,.18)}
+.tt li .b{font-size:16.5px;font-weight:700}
+.tt li .b em{display:block;font-style:normal;font-size:14px;font-weight:500;color:var(--ink3);margin-top:2px}
+.tt li button.tick{margin-top:7px;font-size:14px;font-weight:700;color:var(--ink2);
+  border:2px solid var(--line);background:var(--panel2);border-radius:99px;padding:7px 14px}
+.tt li.done button.tick{color:#0F2A17;background:var(--lime);border-color:var(--lime)}
+@keyframes slide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+
+/* ---- meter / ring ---- */
+.meter{height:14px;border-radius:99px;background:#0D1424;border:1px solid var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),var(--amber));transition:width .7s ease}
+.big{font-size:44px;white-space:nowrap;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
+.stat div{background:#0E1526;border:1px solid var(--line);border-radius:14px;padding:12px 6px}
+.stat div b{display:block;font-size:26px;font-weight:800}
+.stat div span{font-size:12.5px;font-weight:700;color:var(--ink3)}
+
+/* ---- stamps ---- */
+.stamps{display:flex;gap:6px}
+.stamps i{flex:1;min-width:0;height:46px;border:2px dashed var(--line);border-radius:11px;display:grid;place-items:center;
+  font-size:17px;font-weight:800;color:var(--ink3);font-style:normal;background:#0E1526}
+.stamps i.on{border-style:solid;border-color:var(--amber);color:#231605;
+  background:linear-gradient(180deg,var(--amber),var(--amber2));box-shadow:0 3px 0 #B96F22;animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.6) rotate(-12deg)}70%{transform:scale(1.12)}100%{transform:none}}
+.streak{display:inline-flex;align-items:center;gap:6px;background:#0E1526;border:2px solid var(--line);
+  border-radius:99px;padding:7px 14px;font-weight:800;font-size:15px}
+.streak b{color:var(--amber);font-size:19px}
+
+/* ---- 知識 ---- */
+.mast{border-bottom:3px solid var(--amber);padding:8px 0 12px;margin-bottom:18px}
+.mast h2{font-size:30px;letter-spacing:.02em}
+.mast p{margin:6px 0 0;font-size:14px;font-weight:700;color:var(--ink3)}
+.lead{border:2px solid var(--line);border-radius:22px;overflow:hidden;margin-bottom:15px;
+  background:linear-gradient(150deg,#2C3D6B,#1A2440);box-shadow:0 5px 0 rgba(0,0,0,.3)}
+.lead .body{padding:18px}
+.lead h3{font-size:24px;margin:8px 0 10px}
+.artgrid{display:grid;gap:12px}
+.art{border:2px solid var(--line);border-radius:18px;padding:15px 16px;
+  background:linear-gradient(180deg,var(--panel),#19243F);text-align:left;width:100%;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.art .no{font-size:13px;font-weight:800;color:var(--amber);letter-spacing:.06em}
+.art h4{font-size:18.5px;margin:7px 0 6px}
+.art.locked{opacity:.45}
+.ev{font-size:12.5px;font-weight:800;padding:4px 9px;border-radius:8px;border:2px solid var(--line);white-space:nowrap}
+.ev.e3{color:#0F2A17;background:var(--lime);border-color:var(--lime)}
+.ev.e2{color:#08182B;background:var(--dawn);border-color:var(--dawn)}
+.ev.e1{color:#2A1B04;background:var(--amber);border-color:var(--amber)}
+.ev.myth{color:#2B0D08;background:var(--rose);border-color:var(--rose)}
+article.read h2{font-size:28px;line-height:1.45;margin:10px 0 12px}
+.kicker{font-size:13.5px;font-weight:800;color:var(--amber)}
+article.read .kicker{font-size:13.5px;font-weight:800;color:var(--amber)}
+article.read .leadp{font-size:17px;font-weight:700;border-left:4px solid var(--amber);padding-left:14px;margin:16px 0}
+article.read .concl{background:#0E1526;border:2px solid var(--amber);border-radius:16px;padding:15px 16px;margin:18px 0}
+article.read .concl b{font-size:13.5px;letter-spacing:.1em;color:var(--amber);display:block;margin-bottom:7px}
+article.read h3{font-size:19.5px;margin:26px 0 8px;color:var(--amber)}
+article.read p{margin:0 0 14px;font-weight:500}
+article.read .fig{border:2px solid var(--line);border-radius:16px;padding:16px;margin:18px 0;background:#0E1526}
+article.read .src{font-size:13.5px;color:var(--ink3);margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+article.read .src div{margin-bottom:5px;word-break:break-all}
+
+/* ---- misc ---- */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal .h{font-size:12.5px;font-weight:800;color:var(--ink3);text-align:center}
+.cal .d{border:2px solid var(--line);border-radius:12px;min-height:62px;padding:5px;font-size:11.5px;
+  background:#0E1526;text-align:left;font-weight:600}
+.cal .d b{font-size:14px;font-weight:800;display:block;color:var(--ink)}
+.cal .d.late{border-color:var(--amber);background:rgba(255,193,94,.14)}
+.cal .d.work{border-color:var(--dawn);background:rgba(121,180,240,.1)}
+.cal .d.empty{border:none;background:none;min-height:0}
+.cal .d em{font-style:normal;display:block;color:var(--ink2);font-size:11px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:104px;
+  background:linear-gradient(180deg,var(--amber),var(--amber2));color:#231605;font-weight:800;
+  padding:14px 20px;border-radius:99px;font-size:15.5px;z-index:60;box-shadow:0 8px 26px rgba(0,0,0,.55)}
+.sheet{position:fixed;inset:0;background:rgba(6,9,16,.78);z-index:50;display:flex;align-items:flex-end}
+.sheet .in{background:var(--bg2);border-top-left-radius:24px;border-top-right-radius:24px;
+  padding:20px 16px calc(30px + env(safe-area-inset-bottom));
+  width:100%;max-height:88vh;overflow:auto;border-top:2px solid var(--line)}
+.wizard{max-width:520px;margin:0 auto}
+.q{margin-bottom:20px}
+.q p{margin:0 0 10px}
+ul.plain{padding-left:20px;margin:10px 0}ul.plain li{margin-bottom:8px}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px;font-weight:600}
+.kv:last-child{border:none}
+.kv b{font-variant-numeric:tabular-nums;font-weight:800}
+.warnbar{background:var(--rose);color:#2B0D08;font-weight:800;padding:12px 16px;font-size:15px;
+  border-radius:14px;margin-bottom:14px}
+.instr{counter-reset:st;list-style:none;padding:0;margin:12px 0 0}
+.instr li{counter-increment:st;position:relative;padding-left:40px;margin-bottom:12px;font-weight:600}
+.instr li:before{content:counter(st);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;
+  background:var(--amber);color:#231605;font-weight:800;display:grid;place-items:center;font-size:15px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="r1">
+    <div class="brand">ねむログ</div>
+    <div class="lvl" id="lvl"></div>
+  </div>
+</header>
+
+<main>
+  <section id="v-home" class="view on"></section>
+  <section id="v-log" class="view"></section>
+  <section id="v-shift" class="view"></section>
+  <section id="v-analyze" class="view"></section>
+  <section id="v-know" class="view"></section>
+  <section id="v-set" class="view"></section>
+</main>
+
+<nav class="tabs" id="tabs"></nav>
+<div id="sheet"></div>
+
+<script>
+"use strict";
+/* ============ storage (localStorage、使えなければメモリ) ============ */
+const mem={};
+let STORE_OK=false;
+(function(){ try{ localStorage.setItem("__t","1"); localStorage.removeItem("__t"); STORE_OK=true; }catch(e){ STORE_OK=false; } })();
+const store={
+  get(k){ try{const v=localStorage.getItem(k);return v===null?(k in mem?mem[k]:null):v;}catch(e){return k in mem?mem[k]:null;} },
+  set(k,v){ mem[k]=v; try{ localStorage.setItem(k,v); localStorage.setItem(k+".bak."+(new Date().getDate()%2), v); STORE_OK=true; }catch(e){ STORE_OK=false; } }
+};
+const standalone = (window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone===true;
+const KEY="nemulog.v1";
+const DEFAULTS={
+  profile:{ name:"", ageBand:"18-25", usualBed:"00:30", usualWake:"08:00",
+    goal:"morning", chronotype:null, onboarded:false },
+  settings:{
+    preset:"vacation",              // vacation | school
+    schoolWake:"07:15", prepMin:70,
+    vacationWakeCap:"09:00",
+    needMin:null,                   // 手動上書き
+    latencyMin:15, bathMin:22, careMin:20,
+    lateThreshold:"23:00", lateBasis:"home", lateGraceMin:90, normalWindowMin:30,
+    lateHandling:"lateMode",        // lateMode | exempt
+    surplusWeight:0.5, debtWindow:14,
+    places:{
+      "エブリー":{commuteMin:15, afterMin:60, afterLabel:"ジム", mealMin:20, mealWeight:"普通"},
+      "やきとり":{commuteMin:30, afterMin:0, afterLabel:"", mealMin:10, mealWeight:"軽め",
+                  lastTrain:"23:48", rideMin:25, stationHomeMin:5, fixedArrival:"00:18"}
+    },
+    reminders:{bath:true, caffeine:true}
+  },
+  records:{},   // date(起床日) -> rec
+  shifts:{},    // date -> {place,start,end,actualEnd,gym}
+  plans:{},     // date -> {title,startTime,travelMin,prepMin}
+  range:{from:null,to:null},
+  game:{points:0, streak:0, insurance:1, stamps:0, cards:0, badges:[], themes:["night"], exempt:[]},
+  read:{},      // articleId -> true
+  overrides:{}  // date -> {wake:"06:30"}
+};
+let S=load();
+function load(){
+  try{ const raw=store.get(KEY); if(!raw) return deep(DEFAULTS);
+    const o=JSON.parse(raw); return merge(deep(DEFAULTS),o);
+  }catch(e){ return deep(DEFAULTS); }
+}
+function save(){ store.set(KEY,JSON.stringify(S)); }
+function deep(o){ return JSON.parse(JSON.stringify(o)); }
+function merge(a,b){ for(const k in b){ if(b[k]&&typeof b[k]==="object"&&!Array.isArray(b[k])&&a[k]&&typeof a[k]==="object"&&!Array.isArray(a[k])) merge(a[k],b[k]); else a[k]=b[k]; } return a; }
+
+/* ============ 時刻ユーティリティ ============ */
+// 夜の時刻は「正午起点の分」で扱う（23:45→705、01:30→810）
+const pad=n=>String(n).padStart(2,"0");
+function hm2min(s){ if(!s)return null; const[a,b]=s.split(":").map(Number); return a*60+b; }
+function min2hm(m){ m=((m%1440)+1440)%1440; return pad(Math.floor(m/60))+":"+pad(m%60); }
+function night(s){ const m=hm2min(s); if(m===null)return null; return m<720? m+1440-720 : m-720; } // 正午起点
+function unNight(v){ return min2hm(((v%1440)+1440)%1440 + 720); }
+function dur(m){ const s=m<0?"−":""; m=Math.abs(Math.round(m)); return s+Math.floor(m/60)+"時間"+pad(m%60)+"分"; }
+function durShort(m){ m=Math.round(m); const s=m<0?"−":""; m=Math.abs(m); return s+(Math.floor(m/60)?Math.floor(m/60)+"h":"")+pad(m%60)+"m"; }
+function today(){ const d=new Date(); return iso(d); }
+function iso(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function parseISO(s){ const[y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function addDays(s,n){ const d=parseISO(s); d.setDate(d.getDate()+n); return iso(d); }
+function dow(s){ return "日月火水木金土"[parseISO(s).getDay()]; }
+function md(s){ const[,m,d]=s.split("-"); return Number(m)+"/"+Number(d); }
+function median(a){ if(!a.length)return null; const b=[...a].sort((x,y)=>x-y); const i=Math.floor(b.length/2);
+  return b.length%2?b[i]:(b[i-1]+b[i])/2; }
+function quantile(a,q){ if(!a.length)return null; const b=[...a].sort((x,y)=>x-y);
+  const p=(b.length-1)*q, lo=Math.floor(p), hi=Math.ceil(p); return lo===hi?b[lo]:b[lo]+(b[hi]-b[lo])*(p-lo); }
+
+/* ============ 予定・シフトからその日の枠を出す ============ */
+function isSchoolPeriod(date){
+  // 9月以降を学校期間とする簡易判定（プリセットは手動でも切替可）
+  if(S.settings.preset==="school") return true;
+  if(S.settings.preset==="vacation") return false;
+  return Number(date.split("-")[1])>=9;
+}
+// その朝の起床デッドライン（date = 起きる日）
+function wakeTarget(date){
+  const ov=S.overrides[date]; if(ov&&ov.wake) return {hm:ov.wake, why:"手動指定"};
+  const cands=[];
+  const sh=S.shifts[date];
+  if(sh&&sh.start){ const p=S.settings.places[sh.place]||{commuteMin:20};
+    cands.push({m:hm2min(sh.start)-(p.commuteMin||20)-S.settings.prepMin, why:sh.place+"出勤"}); }
+  const pl=S.plans[date];
+  if(pl&&pl.startTime) cands.push({m:hm2min(pl.startTime)-(pl.travelMin||20)-(pl.prepMin||S.settings.prepMin), why:pl.title||"予定"});
+  const d=parseISO(date).getDay();
+  if(isSchoolPeriod(date) && d>=1 && d<=5) cands.push({m:hm2min(S.settings.schoolWake), why:"学校"});
+  // 上限は必ず候補に入れる。昼からの出勤日に「起床15:20」のような無意味な値を出さないため
+  cands.push({m:hm2min(S.settings.vacationWakeCap), why:"仮の起床上限"});
+  cands.sort((a,b)=>a.m-b.m);
+  return {hm:min2hm(cands[0].m), why:cands[0].why};
+}
+// 帰宅時刻（その夜 = date の夜に働く場合。shift は「働く日」で保持）
+function homeArrival(date){
+  const sh=S.shifts[date]; if(!sh||!sh.end) return null;
+  const p=S.settings.places[sh.place]||{commuteMin:25,afterMin:0};
+  const end=sh.actualEnd||sh.end;
+  const endN=night(end);
+  if(p.fixedArrival && night(end)>=night(S.settings.lateThreshold)){
+    return {hm:p.fixedArrival, n:night(p.fixedArrival), why:"終電"+p.lastTrain};
+  }
+  const gym=(sh.gym!==false && (p.afterMin||0)>0)?p.afterMin:0;
+  const extra = p.fixedArrival ? ((p.rideMin||25)+(p.stationHomeMin||5)+15) : ((p.commuteMin||20)+gym);
+  const n=endN+extra;
+  return {hm:unNight(n), n, why:(gym?p.afterLabel+(gym)+"分＋":"")+"移動"+(p.fixedArrival?((p.rideMin||25)+(p.stationHomeMin||5))+"分（待ち込み）":(p.commuteMin||20)+"分")};
+}
+function needMin(){
+  const est=estimateNeed();
+  return S.settings.needMin || est.value;
+}
+// 今夜の計画（date = 寝る日＝夜側の日付）
+function plan(date){
+  const wakeDate=addDays(date,1);
+  const wt=wakeTarget(wakeDate);
+  const need=needMin();
+  const lat=S.settings.latencyMin;
+  const wakeN=night(wt.hm)+1440>2880? night(wt.hm): night(wt.hm); // 朝は正午起点で 1140 前後
+  const wakeNn=night(wt.hm); // 07:15 -> 1155
+  const normalBedN=wakeNn-need-lat;
+  const ha=homeArrival(date);
+  const th=night(S.settings.lateThreshold);
+  const sh=S.shifts[date];
+  let isLate=false;
+  if(sh&&sh.end){
+    const basisN = S.settings.lateBasis==="home" ? (ha?ha.n:night(sh.actualEnd||sh.end)) : night(sh.actualEnd||sh.end);
+    isLate = basisN>=th;
+  }
+  let bedN=normalBedN, mode= isLate?"late":"normal";
+  if(isLate && ha) bedN=Math.min(ha.n+S.settings.lateGraceMin, normalBedN);
+  const mealPre = ha? (S.settings.places[sh.place]?.mealMin||15) : 0;
+  // 帰宅が遅くて目標に間に合わない夜：目標を成立可能な最早に置き、不足見込みを別に出す
+  let shortfall=0;
+  if(ha){ const minBlock=3+mealPre+10+S.settings.careMin;
+    if(bedN < ha.n+minBlock){ shortfall=ha.n+minBlock-bedN; bedN=ha.n+minBlock; } }
+  const startN = ha? ha.n : Math.max(bedN-150, night("21:00"));
+  const slack = bedN-startN;
+  // 入浴プラン
+  let wait,bath,label;
+  if(!ha){ wait=90;bath=S.settings.bathMin;label="通常（40℃で15分ほど）"; }
+  else if(slack>=120){ wait=90;bath=S.settings.bathMin;label="通常（40℃で15分ほど）"; }
+  else if(slack>=60){ wait=45;bath=S.settings.bathMin;label="短め（40℃で10分以内）"; }
+  else if(slack>=30){ wait=25;bath=15;label="ぬるめ38〜39℃でさっと／シャワー＋足湯"; }
+  else { wait=0;bath=10;label="シャワーのみ（体温を上げない）"; }
+  const meal = ha? (S.settings.places[sh.place]?.mealMin||15) : 0;
+  const mealStartN = ha? ha.n+3 : null;
+  // 待ち時間は残り時間に収める。ケア時間（スキンケア・ドライヤー）が物理的な下限
+  if(ha){ const maxWait=slack-3-meal-bath; wait=Math.min(wait,Math.max(S.settings.careMin,maxWait)); }
+  const realWait=Math.max(wait,S.settings.careMin);
+  const bathEndN=bedN-realWait;
+  const bathStartN=bathEndN-bath;
+  const needBlock = ha? (meal + bath + S.settings.careMin) : 0;
+  const feasibleN = ha? ha.n+3+needBlock : null;
+  const conflict = ha? (mealStartN+meal > bathStartN) : false;
+  return {date,wakeDate,wakeTarget:wt,need,lat,bedN,mode,isLate,ha,slack,needBlock,feasibleN,shortfall,
+    bathPlan:{wait,realWait,bath,label,bathStartN,bathEndN},
+    meal:{min:meal,startN:mealStartN,weight:S.settings.places[sh?.place]?.mealWeight},
+    conflict, shift:sh||null};
+}
+
+/* ============ 分析 ============ */
+function recArr(){ return Object.keys(S.records).sort().map(d=>({date:d,...S.records[d]})); }
+function sleepMin(r){
+  if(r.bandTotal) return r.bandTotal;
+  if(r.inBed&&r.wake){
+    let a=night(r.inBed), b=night(r.wake); if(b<a)b+=1440;
+    return Math.max(0,b-a-(r.latency??S.settings.latencyMin));
+  }
+  return null;
+}
+function conf(r){ return r.bandTotal?"高":(r.inBed&&r.wake&&r.latency!=null?"中":"低"); }
+function midSleep(r){
+  if(!r.inBed||!r.wake) return null;
+  let a=night(r.inBed)+(r.latency??S.settings.latencyMin), b=night(r.wake); if(b<a)b+=1440;
+  return (a+b)/2;
+}
+function estimateNeed(){
+  const rs=recArr().filter(r=>sleepMin(r));
+  const free=rs.filter(r=>r.isFreeDay&&!r.alarmUsed).map(r=>sleepMin(r));
+  if(free.length>=3) return {value:Math.round(median(free)), conf:free.length>=5?"高":"中", how:"自由睡眠日"+free.length+"日の中央値", n:rs.length};
+  const good=rs.filter(r=>(r.refreshed||0)>=4).map(r=>sleepMin(r));
+  if(good.length>=5) return {value:Math.round(quantile(good,.25)), conf:"中", how:"スッキリ度4以上の日"+good.length+"日の下位25%点", n:rs.length};
+  const u=(()=>{ let a=night(S.profile.usualBed),b=night(S.profile.usualWake); if(b<a)b+=1440; return b-a-S.settings.latencyMin; })();
+  return {value:Math.max(360,Math.min(600,Math.round(u))), conf:"低（推定中）", how:"初回入力のいつもの時刻から", n:rs.length};
+}
+function debt(){
+  const need=needMin(), w=S.settings.debtWindow;
+  let sum=0; const series=[];
+  for(let i=w-1;i>=0;i--){
+    const d=addDays(today(),-i), r=S.records[d];
+    const t=r?sleepMin(r):null;
+    if(t!=null){ const df=Math.max(0,need-t), sp=Math.max(0,t-need)*S.settings.surplusWeight; sum=Math.max(0,sum+df-sp); }
+    series.push({date:d,v:Math.round(sum)});
+  }
+  return {min:Math.round(sum), series, need};
+}
+function socialJetlag(){
+  const rs=recArr().filter(r=>midSleep(r)!=null).slice(-28);
+  const con=[],fre=[];
+  rs.forEach(r=>{ const wt=wakeTarget(r.date); const constrained = wt.why!=="仮の起床上限";
+    (constrained?con:fre).push(midSleep(r)); });
+  if(con.length<2||fre.length<2) return null;
+  return {min:Math.round(Math.abs(median(fre)-median(con))), nc:con.length, nf:fre.length};
+}
+function score(date){
+  const r=S.records[date]; if(!r) return null;
+  const t=sleepMin(r); if(t==null) return null;
+  const need=needMin();
+  const sDur=Math.min(1,t/need)*40;
+  const ms=midSleep(r), all=recArr().map(midSleep).filter(v=>v!=null);
+  let sReg=15;
+  if(ms!=null&&all.length>=3){ const dev=Math.abs(ms-median(all)); sReg=Math.max(0,1-dev/90)*30; }
+  const sRef=r.refreshed? (r.refreshed-1)/4*30 : 0;
+  return {total:Math.round(sDur+sReg+sRef), dur:Math.round(sDur), reg:Math.round(sReg), ref:Math.round(sRef)};
+}
+function promiseResult(date){ // date=寝る日
+  const r=S.records[addDays(date,1)]; if(!r||!r.inBed) return null;
+  const p=plan(date);
+  if(S.settings.lateHandling==="exempt"&&p.isLate) return {ok:null,why:"免除日"};
+  const actual=night(r.inBed);
+  if(p.isLate&&p.ha){ const lim=p.ha.n+S.settings.lateGraceMin;
+    return {ok:actual<=Math.min(lim,p.bedN)+0.001, why:"遅番モード（帰宅から"+S.settings.lateGraceMin+"分以内）", target:unNight(Math.min(lim,p.bedN))};}
+  return {ok:Math.abs(actual-p.bedN)<=S.settings.normalWindowMin, why:"通常（目標±"+S.settings.normalWindowMin+"分）", target:unNight(p.bedN)};
+}
+function discrepancy(r){
+  if(!r||!r.bandTotal||!r.refreshed) return false;
+  const good=r.bandTotal>=needMin()-15;
+  return (good&&r.refreshed<=2)||(!good&&r.refreshed>=5);
+}
+
+/* ============ ゲーム ============ */
+const BADGES=[
+  {id:"first",  n:"はじめの一夜",   d:"記録を1日つけた",        t:r=>r.length>=1},
+  {id:"d7",     n:"七日の帳簿",     d:"記録7日",                t:r=>r.length>=7},
+  {id:"d14",    n:"二週の帳簿",     d:"記録14日（推定が動く）", t:r=>r.length>=14},
+  {id:"free",   n:"自由睡眠",       d:"アラームなしの朝を3回",  t:r=>r.filter(x=>x.isFreeDay&&!x.alarmUsed).length>=3},
+  {id:"bath90", n:"黄金の湯上がり", d:"湯上がり90分前を5回",    t:r=>r.filter(x=>x.bathType==="tub"&&x.bathWait>=75).length>=5},
+  {id:"late5",  n:"終電の夜も",     d:"遅番モード達成5回",      t:null},
+  {id:"read5",  n:"五本読了",       d:"知識記事を5本読んだ",    t:null}
+];
+function refreshGame(){
+  const rs=recArr();
+  BADGES.forEach(b=>{ if(b.t&&b.t(rs)&&!S.game.badges.includes(b.id)) S.game.badges.push(b.id); });
+  if(Object.keys(S.read).length>=5&&!S.game.badges.includes("read5")) S.game.badges.push("read5");
+  if((S.game.lateWins||0)>=5&&!S.game.badges.includes("late5")) S.game.badges.push("late5");
+  save();
+}
+
+/* ============ 記事 ============ */
+const ART=[
+  {id:"a1",no:"特集 1",ev:3,min:3,unlock:"always",
+   t:"黄金の90分 — 最初のノンレム睡眠がすべてを決める",
+   lead:"寝つきの直後90分が、その夜の質をほぼ決めてしまう。何時に寝るかより、最初の90分をどう作るか。",
+   concl:"「22時〜2時が特別」は誤り。何時に寝ても、最初の90分が黄金。",
+   ev2:"『スタンフォード式最高の睡眠』の中心的な主張。体温と入眠の関係自体は生理学的に確立していますが、「90分」という区切りの効果量を独立に検証した研究は限られます。",
+   body:[
+    {h:"最初の90分に何が起きるか",p:"眠りに入ると、まず一晩でいちばん深いノンレム睡眠が来ます。この最初のかたまりで、成長ホルモンの多くが出て、交感神経優位から副交感神経優位へ切り替わります。ここが崩れると、その後どれだけ長く寝ても取り返しにくい、という考え方です。"},
+    {h:"「ゴールデンタイム」説は誤り",p:"かつて「夜10時から2時に寝ていると成長ホルモンが出る」と言われましたが、これは時刻ではなく入眠からの経過時間で決まります。深夜1時に寝ても、1時からの90分が黄金の90分です。シフトのある生活にとっては、これは救いのある事実です。"},
+    {h:"だから何をすればいいか",p:"最初の90分の質を上げる鍵は、体温と脳のスイッチの2つ。体温は入浴でコントロールでき（次の記事）、脳のスイッチは「毎晩同じ手順で寝る」ことで切れやすくなります。逆に、寝る直前に強い光を浴びる、頭を使う、激しく動く、といったことはこの90分を薄くします。"},
+    {h:"このアプリでの見方",p:"バンドの「深い睡眠」の分数は機器推定なので絶対値は当てになりません。前半に深い睡眠が集まっているか、自分の平常値と比べて多いか少ないかを見る程度にしてください。"}],
+   src:["西野精治『スタンフォード式 最高の睡眠』","https://president.jp/articles/-/29465"]},
+
+  {id:"a2",no:"特集 2",ev:2,min:3,unlock:"always",
+   t:"体温スイッチ — お風呂は寝る90分前、40℃",
+   lead:"深部体温を一度上げて、下がる勢いで眠る。入浴は睡眠の道具になる。",
+   concl:"40℃前後の湯船に浸かり、上がってから90分後に寝る。42℃以上は逆効果。",
+   ev2:"体温変化と入眠の関係は生理学的に確立。「90分」「40℃」という具体的な数値は同書が示す実務的な目安です。",
+   body:[
+    {h:"体の中と表面、2つの温度",p:"起きている間、体の内部（深部体温）は手足の皮膚温より2℃ほど高いです。眠くなると手足がぽかぽかするのは、皮膚から熱を捨てて深部体温を下げているから。この差が2℃以下に縮まったときが、入眠のタイミングです。"},
+    {h:"なぜ90分前なのか",p:"湯船に浸かると深部体温は一時的に上がります。体は元に戻そうとして血管を広げ、熱を強く捨て始めます。その結果、湯上がりから90分ほど経つと、入浴前より低い水準まで深部体温が落ちます。この急降下が強い睡眠信号になります。"},
+    {h:"温度と時間の注意",p:"42℃以上の熱い湯は交感神経を刺激して脳を起こしてしまうので逆効果。40℃前後のぬるめが良いとされています。シャワーだけでは深部体温があまり上がらないため、この効果は弱くなります。"},
+    {h:"時間がない夜はどうするか",p:"帰宅が遅い日に90分待つと、その分だけ睡眠が削られます。それは本末転倒です。このアプリは寝るまでの余裕を見て、短め入浴やシャワーのみへ自動で切り替えます。湯上がりのスキンケアとドライヤーの20分も、待ち時間の一部として計算に入っています。"}],
+   src:["西野精治『スタンフォード式 最高の睡眠』","https://crexgroup.com/ja/sleep/sleep-science/stanford-method-best-sleep/"]},
+
+  {id:"a3",no:"特集 3",ev:2,min:2,unlock:"always",
+   t:"脳のスイッチ — 単調さは、退屈ではなく武器",
+   lead:"何をすれば眠れるかではなく、毎晩同じことをするかどうか。",
+   concl:"「よく眠れる音楽」は人によって違う。自分に効く手順を見つけて固定する。",
+   ev2:"入眠儀式（就寝前ルーティン）の有効性は広く支持されています。個別の手段（特定の音楽・香り）に一律の効果があるという根拠は弱いです。",
+   body:[
+    {h:"一般解はない",p:"同書の著者は、寝る前に音楽を聴くのが良いかと聞かれても一概には言えないと答えています。それで寝つけたならその人には良い習慣（ポジティブルーティン）ですが、心地よいとされる音楽でも気になって眠れない人もいます。香りもハーブティーも同じです。"},
+    {h:"だから記録する",p:"つまり、これは調べれば答えが出る話ではなく、自分で試して確かめる話です。このアプリで入眠サウンド・入浴・食事のパターンを記録しておけば、数週間で「自分にとってのポジティブルーティン」が見えてきます。"},
+    {h:"退屈が効く",p:"脳のスイッチを切るには、刺激を減らすことがいちばん確実です。帰宅後に照明を落とす、同じ順番で支度をする、寝る前の30分は新しい情報を入れない。派手な工夫より、単調さのほうが効きます。"}],
+   src:["西野精治『スタンフォード式 最高の睡眠』","https://liniere.jp/column/health/17659/"]},
+
+  {id:"a4",no:"特集 4",ev:3,min:3,unlock:"always",
+   t:"眠りの借金は、借りていなくてもたまる",
+   lead:"毎日30分の不足は、週で3時間半の借金になる。そして週末には返せない。",
+   concl:"睡眠負債は数日では解消しない。十分な睡眠を3〜4週間続けて、はじめて返せる。",
+   ev2:"睡眠負債の概念と「短期間では返済できない」ことは広く合意されています。返済に必要な期間の見積もりには幅があります。",
+   body:[
+    {h:"自覚がないのが厄介",p:"自分では足りていると思っている人でも、わずかな不足が積み上がっていることがあります。これが睡眠負債で、「行動誘発性睡眠不足症候群」として睡眠障害の一種と見なされることもあります。2〜3日たっぷり寝た程度では解消せず、十分に眠る生活を3〜4週間ほど続ける必要があるとされています。"},
+    {h:"必要な量は人それぞれ",p:"必要睡眠時間には遺伝的な個人差があります。だから他人の平均値ではなく、自分で実験して把握するしかありません。実務的な手順としては、平日と休日の就寝・起床をそろえ、就寝を30分早めて5日から1週間続け、体調やパフォーマンスが上がったかを確かめる、という方法が紹介されています。"},
+    {h:"分割返済のほうが効く",p:"週末に一気に返そうとすると、起床時刻が大きくずれて体内リズムが崩れます（次の記事）。平日に少しずつ割り振って返すほうが、リズムを保ったまま総量を増やせます。このアプリは「1日あたり20〜60分を3週間」という形で返済プランを出します。"},
+    {h:"アプリの計算方法",p:"日々の不足を積み上げ、必要以上に寝た分は半分だけ返済に充当します（寝だめでは完全に返せないため）。累積は直近14日分だけを見ます。無期限に積むと数字が膨らむだけで、行動につながらないからです。この重みと期間は設定で変えられます。"}],
+   src:["湧永製薬「睡眠負債」https://www.wakunaga.co.jp/health_info/","https://books.bunshun.jp/articles/-/8451"]},
+
+  {id:"b1",no:"基礎 01",ev:3,min:3,unlock:"always",
+   t:"自分の必要睡眠時間を測る、3つの方法",
+   lead:"7〜9時間という推奨レンジは出発点。自分の数字は自分で測る。",
+   concl:"アラームなしで自然に起きられる日の睡眠時間が、いちばん確かな手がかり。",
+   ev2:"自由睡眠による必要量の推定は睡眠医学で標準的な考え方です。日数や分位点の細かい設定は実務的な判断です。",
+   body:[
+    {h:"方法1：連続4晩、好きなだけ寝る",p:"目覚ましを使わず自然に起きるまで寝る日を、できれば4晩続けます。初日は長く眠り、2晩目以降は徐々に短くなって、3〜4晩目で安定してきます。その安定した時間が、自分に十分な睡眠の目安です。連休や夏休みが使えます。"},
+    {h:"方法2：調子が良かった日から逆算する",p:"朝のスッキリ度が高かった日の睡眠時間を集め、その下のほうの値を見ます。「これ以上寝ればだいたい調子が良い」という最小ラインが見えます。日常生活のまま測れるのが利点です。"},
+    {h:"方法3：平日と休日の差から推定する",p:"休日の平均から平日の平均を引き、休日の日数分を1週間に均します。手軽ですが「休日で返せている」前提が必要なので、参考値にとどめてください。"},
+    {h:"このアプリの扱い",p:"記録が14日未満のあいだは「推定中」と表示し、初回入力のいつもの時刻から暫定値を使います。自由睡眠日が3日たまると方法1に、スッキリ度の記録が5日たまると方法2に自動で切り替わります。"}],
+   src:["https://kokoronoclinic.net/hiyoshi/","https://www.suimin.co.jp/column/insufficiency_02"]},
+
+  {id:"b2",no:"基礎 02",ev:3,min:3,unlock:"days:3",
+   t:"社会的ジェットラグ — 休日の寝坊は、時差のある旅と同じ",
+   lead:"平日と休日で睡眠の中央時刻が2時間ずれると、体は時差ボケになる。",
+   concl:"休日の起床は平日プラス2時間以内。足りない分は20分の昼寝で。",
+   ev2:"社会的ジェットラグと健康リスクの関連は多くの研究で報告されています。2時間という線は目安です。",
+   body:[
+    {h:"計算のしかた",p:"就寝と起床のちょうど真ん中を睡眠中央時刻と呼びます。深夜2時に寝て10時に起きるなら、中央時刻は6時。平日が3時30分なら、差は2時間30分です。研究では、この差が2時間を超えると健康リスクが高まる可能性が示されています。"},
+    {h:"体感としての重さ",p:"平日7時起きの人が休日に10時過ぎまで寝ると、差は3時間超になります。これは週末のあいだに時差3時間半の地域へ往復して、月曜の朝に出勤するのと同程度の負担だと説明されます。月曜がつらいのは、意志の問題ではありません。"},
+    {h:"シフト生活での見方",p:"平日と休日で分けるだけでは、シフトのある生活では正しく出ません。このアプリは「起床時刻に制約がある日」と「自由に起きられる日」で分けて計算します。金土に遅番が入る学校期間は、ここが最大のリスクになります。"},
+    {h:"打ち手",p:"いちばん効くのは、休日も起床時刻をなるべく動かさないこと。どうしても長く寝たい日は平日プラス2時間以内に収め、残りは短い昼寝で埋めます。そして翌日が学校の夜（日曜）は、平日と同じ時刻に寝ることを優先します。"}],
+   src:["https://sleep1.jp/social_jet_lag/","https://next.rikunabi.com/journal/20200129_t01_s/"]},
+
+  {id:"b3",no:"基礎 03",ev:3,min:2,unlock:"days:5",
+   t:"睡眠休養感 — 時間より大事かもしれない指標",
+   lead:"何時間寝たかより、朝に「休めた」と感じるか。",
+   concl:"時間が足りていても休養感が低いなら、原因は長さ以外にある。",
+   ev2:"近年の睡眠ガイドで重視されている指標です。",
+   body:[
+    {h:"長さだけでは足りない",p:"同じ7時間でも、すっきり起きられる日と体が重い日があります。近年の睡眠ガイドでは、睡眠時間と並んで「起きたときに休めた感じがあるか」が重視されるようになりました。時間は満たしているのに休養感が低い場合、長さを伸ばすより原因を探すほうが有効です。"},
+    {h:"よくある原因",p:"就寝直前のアルコール、寝室の温度や明るさ、寝る直前の食事、そして呼吸の問題（いびきや無呼吸）。どれも睡眠時間には表れませんが、休養感を確実に下げます。"},
+    {h:"だから朝の3問",p:"このアプリで毎朝答える3問（スッキリ度・寝つき・中途覚醒）は、飾りではなく分析の軸です。入浴や食事の記録は、この3問と突き合わせてはじめて意味を持ちます。逆に3問だけは、他をサボっても続けてください。"}],
+   src:["https://ii-nemuri.press/special/hours_of_sleep_is_necessary/"]},
+
+  {id:"b4",no:"基礎 04",ev:2,min:2,unlock:"days:7",
+   t:"アラーム音を変えるだけで、朝が変わるかもしれない",
+   lead:"「ピピピ」ではなく、メロディのある音。研究はそう示している。",
+   concl:"メロディックだと感じる音のほうが、起床後のぼんやり感が軽い傾向がある。",
+   ev2:"50人の自己申告調査。著者自身が、より大規模な統制実験が必要だと述べています。",
+   body:[
+    {h:"睡眠慣性という問題",p:"起きた直後のぼんやりした状態を睡眠慣性と呼びます。通常30分ほど、長い場合は起床後2〜4時間続き、その間は判断力や作業能力が落ちます。事故につながることもあり、交代勤務者や緊急対応の職種では実害のある問題として扱われています。"},
+    {h:"研究が見つけたこと",p:"RMIT大学の2020年の研究では、参加者が「メロディックだ」と評価した起床音は、睡眠慣性の軽減と有意に関連していました。逆に「メロディックでもないし非メロディックでもない」中間的な音は、ぼんやり感を増やす方向に関連していました。研究者は、旋律の上下が脳の準備運動のように働くのではないかと推測しています。"},
+    {h:"どう使うか",p:"根拠は強くありませんが、試すコストはほぼゼロです。口ずさめるような旋律のある音に変えて、朝のスッキリ度が変わるか2週間見てみてください。このアプリはアラームそのものを鳴らしませんが、使った音の種類を記録して比較できます。"},
+    {h:"あわせて効くこと",p:"起床後に光を浴びる、決まった朝の手順を作る、といったことも睡眠慣性を軽くするとされています。カーテンを開けるのを起床直後の1手目にするだけでも違います。"}],
+   src:["McFarlane SJ et al. (2020) PLOS ONE 10.1371/journal.pone.0215788","https://www.rmit.edu.au/news/media-releases-and-expert-comments/2020/feb/melodic-alarms"]},
+
+  {id:"b5",no:"基礎 05",ev:3,min:2,unlock:"days:10",
+   t:"カフェインとアルコール — 眠れるのに、眠りが浅くなる",
+   lead:"寝つきの良さと睡眠の質は、別のもの。",
+   concl:"カフェインは就寝6時間前まで。アルコールは寝つきを良くして、後半を壊す。",
+   ev2:"カフェインの半減期、アルコールによる後半の睡眠分断は、いずれも確立した知見です。",
+   body:[
+    {h:"カフェインは思ったより長く残る",p:"カフェインの半減期は個人差がありますが、おおむね4〜6時間。夕方6時のコーヒーは、深夜0時にもまだ半分近く残っている計算になります。寝つけたとしても、深い睡眠が減ることがあります。このアプリは就寝目標の6時間前をカフェイン終了時刻として提示します。"},
+    {h:"アルコールは寝つきの薬ではない",p:"飲むと寝つきは良くなります。しかし代謝が進む後半で睡眠が分断され、中途覚醒が増え、休養感が落ちます。「よく眠るために飲む」は、前半と引き換えに後半を売っている状態です。"},
+    {h:"記録して確かめる",p:"どちらも一般論ですが、効きやすさには個人差があります。摂った時刻を記録しておけば、自分にとって何時までなら大丈夫かが数週間で見えてきます。"}],
+   src:["https://www.karadacare-navi.com/life/27/"]},
+
+  {id:"m1",no:"検証 01",ev:"myth",min:2,unlock:"days:3",
+   t:"「22時〜2時が成長ホルモンのゴールデンタイム」は本当か",
+   lead:"広く信じられているが、根拠のない時刻信仰。",
+   concl:"誤り。成長ホルモンは入眠後の最初の深い睡眠で出る。時刻ではない。",
+   ev2:"時刻ではなく入眠からの経過時間で決まる、という点で否定されています。",
+   body:[
+    {h:"どこが間違いか",p:"成長ホルモンの分泌は、時計の針ではなく入眠からの経過時間に連動します。深夜1時に寝れば、1時からの最初の深い睡眠で出ます。『スタンフォード式最高の睡眠』でも、この俗説は明確に否定されています。"},
+    {h:"なぜ広まったのか",p:"多くの人が22時〜2時に最初の深い睡眠を迎えていたため、相関が因果に見えたのだと考えられます。"},
+    {h:"だから",p:"バイトで1時就寝になる日でも、「ゴールデンタイムを逃した」と落ち込む必要はありません。落ち込むべきなのは総量が足りないときだけです。時刻ではなく、量と規則性を見てください。"}],
+   src:["https://liniere.jp/column/health/17659/"]},
+
+  {id:"m2",no:"検証 02",ev:"myth",min:2,unlock:"days:5",
+   t:"「90分の倍数で起きるとスッキリする」は本当か",
+   lead:"計算しやすくて気持ちいいが、当てにはならない。",
+   concl:"根拠は弱い。睡眠周期には80〜110分ほどの個人差があり、夜の中でも変動する。",
+   ev2:"周期の個人差と夜間変動により、倍数で起床時刻を決める合理性は乏しいとされています。",
+   body:[
+    {h:"90分は平均値にすぎない",p:"ノンレムとレムのひと巡りはおおよそ90分と説明されますが、実際には80分から110分ほどの幅があり、同じ人でも夜の前半と後半で変わります。4.5時間や6時間という設計は、この平均を全員に当てた計算です。"},
+    {h:"何が起きるか",p:"倍数に合わせるために睡眠時間を削ると、失う総量のほうが大きくなります。6時間で足りない人が「7.5時間より6時間のほうが目覚めが良いはず」と考えるのは、順序が逆です。"},
+    {h:"代わりに",p:"起床時刻を固定して、そこから必要睡眠時間を引いて就寝時刻を決める。これが確実です。周期を狙いたいなら、バンドのデータが数週間たまってから自分の周期を推定するほうが筋が通っています。このアプリは倍数計算を採用していません。"}],
+   src:["https://otonahealth.jp/sleep-duration-guideline/"]},
+
+  {id:"m3",no:"検証 03",ev:1,min:2,unlock:"days:7",
+   t:"モノラルビート・バイノーラルビートは効くのか",
+   lead:"「深い睡眠が51%増える」という数字の出どころを見る。",
+   concl:"検証中。試す価値はあるが、効くと決めつけない。自分のデータで確かめる。",
+   ev2:"提供元のパイロット研究が主な根拠で、独立した大規模検証は乏しい領域です。",
+   body:[
+    {h:"主張されていること",p:"リナイトなどのアプリは、脳波を特定の周波数に同調させる音（モノラルビート）によって、入眠が16%早くなり深い睡眠が51%長くなるとうたっています。高音が苦手な人向けに非可聴周波数版も用意されています。"},
+    {h:"根拠の強さ",p:"この数値の出どころは提供元が示すパイロット研究です。独立した第三者による大規模な検証があるわけではなく、バイノーラル／モノラルビートの睡眠効果は学術的にまだ結論が出ていません。「効かない」と断定もできませんが、「実証済み」でもありません。"},
+    {h:"だから自己実験",p:"このアプリはサウンドの使用を記録します。使った夜と使わなかった夜でスッキリ度を比べれば、少なくとも自分に効くかどうかは分かります。統計としては弱い比較ですが、自分の意思決定には十分です。"},
+    {h:"安全の注意",p:"高い周波数の連続再生は耳の負担や不快感につながることがあります。音量は控えめに、再生は自動で止まる設定にしてください。イヤホンを着けたまま眠るのは勧めません。"}],
+   src:["https://renight.com/ja"]},
+
+  {id:"s1",no:"安全",ev:3,min:2,unlock:"always",
+   t:"いびき・呼吸が止まる・十分寝ても眠い — 受診を考える目安",
+   lead:"アプリでは分からないことがある。ここは線を引いておく。",
+   concl:"いびきが大きい、呼吸が止まると言われた、十分寝ても日中の眠気が強い。当てはまるなら受診を。",
+   ev2:"睡眠時無呼吸症候群の可能性があり、機器やアプリでは診断できません。",
+   body:[
+    {h:"アプリができないこと",p:"消費者向けのウェアラブルもスマホアプリも、睡眠障害を診断できません。長期の傾向を見るには役立ちますが、原因を説明することはできません。数字が悪い理由がここにある場合、記録を続けても答えは出ません。"},
+    {h:"受診を考える目安",p:"家族や同居している人からいびきが大きいと言われる、寝ている間に呼吸が止まっていると指摘された、十分な時間寝ているのに日中の眠気が強い、朝に頭痛がある。こうした場合は、睡眠時無呼吸症候群などの可能性があります。不眠や強い眠気が2週間以上続く場合も同じです。"},
+    {h:"どこへ",p:"睡眠外来、呼吸器内科、耳鼻咽喉科などが窓口になります。運転する機会が多い人ほど、放置しないほうがいい問題です。"}],
+   src:["https://ubiehealth.com/doctors-note/sleep-tracker-vs-polysomnography-accuracy-stage-4762q2"]}
+];
+function unlocked(a){
+  if(a.unlock==="always") return true;
+  const n=Number(a.unlock.split(":")[1]||0);
+  return Object.keys(S.records).length>=n;
+}
+const EVL={3:{c:"e3",t:"★★★ 確立"},2:{c:"e2",t:"★★ 有力"},1:{c:"e1",t:"★ 検証中"},myth:{c:"myth",t:"⚠ 俗説"}};
+
+/* ============ 描画 ============ */
+const V=["home","log","shift","analyze","know","set"];
+const TABS=[["home","☾","今夜"],["log","✎","記録"],["shift","▤","予定"],["analyze","◠","分析"],["know","▮","知識"],["set","⚙","設定"]];
+let cur="home", openArt=null;
+function el(id){ return document.getElementById(id); }
+function h(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function tabs(){
+  el("tabs").innerHTML=TABS.map(([k,g,n])=>
+    `<button data-go="${k}" aria-current="${cur===k}"><span class="g">${g}</span>${n}</button>`).join("");
+}
+function go(k){ cur=k; openArt=null; V.forEach(v=>el("v-"+v).classList.toggle("on",v===k)); tabs(); render(); window.scrollTo(0,0); }
+function toast(m){ const d=document.createElement("div"); d.className="toast"; d.textContent=m; document.body.appendChild(d);
+  setTimeout(()=>d.remove(),2200); }
+function render(){
+  const hh=new Date().getHours();
+  document.body.classList.toggle("dim", hh>=23||hh<5);
+  const pt=S.game.points||0, lv=Math.floor(pt/300)+1, into=pt%300;
+  el("lvl").innerHTML = S.profile.onboarded
+    ? `<span class="n">Lv.${lv}</span><span class="bar"><i style="width:${Math.round(into/300*100)}%"></i></span><span class="n">${pt}pt</span>`
+    : "";
+  if(!S.profile.onboarded){ renderOnboard(); return; }
+  ({home:renderHome,log:renderLog,shift:renderShift,analyze:renderAnalyze,know:renderKnow,set:renderSet}[cur])();
+}
+
+/* ---- オンボーディング ---- */
+let ob={step:0,tmp:{}};
+function renderOnboard(){
+  el("v-home").classList.add("on"); V.slice(1).forEach(v=>el("v-"+v).classList.remove("on"));
+  el("tabs").innerHTML="";
+  const steps=[
+    ()=>`<div class="q"><p class="serif" style="font-size:20px">はじめに、5つだけ教えてください。</p>
+      <p class="small mut">1分で終わります。あとから全部変えられます。</p></div>
+      <label class="f"><span>呼び名</span><input id="ob-name" value="${h(ob.tmp.name||"")}" placeholder="ささ"></label>
+      <label class="f"><span>いつも寝ている時刻</span><input id="ob-bed" type="time" value="${ob.tmp.usualBed||"00:30"}"></label>
+      <label class="f"><span>いつも起きている時刻</span><input id="ob-wake" type="time" value="${ob.tmp.usualWake||"08:00"}"></label>
+      <button class="btn block" style="margin-top:18px" data-ob="1">次へ</button>`,
+    ()=>`<div class="q"><p class="serif" style="font-size:19px">起きなければいけない時刻</p>
+      <p class="small mut">学校やバイトから逆算した「これ以上遅く起きられない」線です。</p></div>
+      <label class="f"><span>学校がある日の起床時刻</span><input id="ob-sw" type="time" value="${ob.tmp.schoolWake||"07:15"}"></label>
+      <label class="f"><span>いまの時期</span><select id="ob-preset">
+        <option value="vacation">休み中（学校なし）</option><option value="school">学校がある</option></select></label>
+      <label class="f"><span>休み中に、これより遅くは起きたくない時刻</span><input id="ob-cap" type="time" value="${ob.tmp.cap||"09:00"}"></label>
+      <p class="tiny">休み中も上限を置くのは、学校が始まる日に体内時計を戻せるようにするためです。</p>
+      <button class="btn block" style="margin-top:18px" data-ob="2">次へ</button>`,
+    ()=>`<div class="q"><p class="serif" style="font-size:19px">いちばん変えたいのは？</p></div>
+      <div class="row wrap" id="ob-goal">
+      ${[["morning","朝の目覚め"],["onset","寝つき"],["daytime","日中の眠気"],["duration","睡眠時間の確保"]]
+        .map(([k,n])=>`<button class="chip" data-goal="${k}" aria-pressed="${ob.tmp.goal===k}">${n}</button>`).join("")}
+      </div>
+      <div class="divider"></div>
+      <div class="q"><p class="serif" style="font-size:19px">朝型・夜型の簡易診断</p>
+      <p class="small mut">推奨就寝時刻の出し方を変えるために使います。飛ばしても構いません。</p></div>
+      ${CHRONO.map((q,i)=>`<div class="q"><p class="small">${q.q}</p><div class="row wrap">
+        ${q.a.map((a,j)=>`<button class="chip" data-c="${i}:${j}" aria-pressed="${(ob.tmp.chrono||{})[i]===j}">${a}</button>`).join("")}
+      </div></div>`).join("")}
+      <button class="btn block" style="margin-top:8px" data-ob="3">はじめる</button>`
+  ];
+  el("v-home").innerHTML=`<div class="wizard">
+    <div class="mast"><h2>ねむログ</h2><p>${["ABOUT YOU","WAKE","GOAL"][ob.step]}　${ob.step+1} / 3</p></div>
+    ${steps[ob.step]()}</div>`;
+}
+const CHRONO=[
+  {q:"予定が何もない日、自然に目が覚めるのは？",a:["6時前","6〜8時","8〜10時","10時以降"]},
+  {q:"朝起きて30分、頭の働きは？",a:["すぐ動く","まあまあ","鈍い","かなり鈍い"]},
+  {q:"夜、自然に眠くなるのは？",a:["21〜22時","22〜24時","0〜1時","1時以降"]},
+  {q:"一日でいちばん集中できるのは？",a:["午前","昼過ぎ","夕方","夜"]}
+];
+
+/* ---- ホーム ---- */
+function renderHome(){
+  const d=today(), p=plan(d), db=debt(), est=estimateNeed();
+  const sh=S.shifts[d];
+  const tl=[];
+  if(p.ha){
+    tl.push({t:p.ha.hm,b:"帰宅",e:p.ha.why,key:false,id:"home"});
+    tl.push({t:unNight(p.ha.n+2),b:"照明を落とす",e:"暖色・間接照明に",id:"light"});
+    tl.push({t:unNight(p.meal.startN),b:"食事（"+p.meal.min+"分）",e:(p.meal.weight||"")+"／入浴より先に済ませる",id:"meal"});
+  }
+  tl.push({t:unNight(p.bathPlan.bathStartN),b:"入浴（"+p.bathPlan.bath+"分）",e:p.bathPlan.label,id:"bath"});
+  tl.push({t:unNight(p.bathPlan.bathEndN),b:"湯上がり → スキンケア・ドライヤー",e:S.settings.careMin+"分",id:"care"});
+  tl.push({t:unNight(p.bedN-30),b:"スマホを置く",e:"新しい情報を入れない",id:"phone"});
+  tl.push({t:unNight(p.bedN),b:"就寝",e:"湯上がりから"+p.bathPlan.realWait+"分",key:true,id:"bed"});
+  const tick=S.records[addDays(d,1)]?.ticks||{};
+  const cafe=unNight(p.bedN-360), meal3=unNight(p.bedN-180);
+  const pr=promiseResult(addDays(d,-1));
+  el("v-home").innerHTML=`
+  ${!STORE_OK?`<div class="warnbar">この画面では記録を保存できません。ファイルを端末で開くか、GitHub Pages に置いて開いてください。</div>`:""}
+  ${(!standalone&&!S.game.hideInstall)?`<div class="card" style="border-color:var(--dawn)"><div class="eyebrow" style="color:var(--dawn)">ホーム画面に追加すると使いやすくなります</div>
+    <ol class="instr small"><li>Safari の共有ボタン（□に↑）を押す</li><li>「ホーム画面に追加」を選ぶ</li><li>名前は「ねむログ」でそのまま追加</li></ol>
+    <p class="tiny" style="margin-top:10px">追加するとアドレスバーが消えて全画面になり、記録もそのまま残ります。</p>
+    <button class="chip" style="margin-top:12px" data-hideinstall="1">この案内を閉じる</button></div>`:""}
+  <div class="hero">
+    <div class="label">今夜の目標就寝</div>
+    <div class="time">${unNight(p.bedN)}</div>
+    <div class="note">${p.wakeTarget.hm}起床（${h(p.wakeTarget.why)}）<br>必要睡眠${dur(p.need)} ＋ 寝つき${p.lat}分</div>
+    <div class="mode">
+      <span class="badge ${p.isLate?"warn":"ok"}">${p.isLate?"遅番モード":"通常"}</span>
+      ${sh?`<span class="badge">${h(sh.place)} ${h(sh.actualEnd||sh.end)}まで</span>`:`<span class="badge">バイトなし</span>`}
+      <span class="badge">必要睡眠の確度：${est.conf}</span>
+    </div>
+  </div>
+
+  ${p.shortfall>0?`<div class="card" style="border-color:#5C332C">
+    <div class="eyebrow" style="color:var(--alert)">今夜は ${dur(p.shortfall)} 足りません</div>
+    <p class="small">帰宅が${p.ha.hm}なので、${p.wakeTarget.hm}起床だと物理的に${dur(p.need-p.shortfall>0?p.need-p.shortfall:0)}前後にしかなりません。今夜どうにかするのではなく、こう埋めます。</p>
+    <ul class="plain small"><li>今日か明日、20分の昼寝を入れる（15時まで）</li>
+    <li>明日の夜は目標より${Math.min(60,p.shortfall)}分早く寝る</li>
+    <li>起床時刻は動かさない。ここを動かすと翌週まで崩れます</li></ul>
+    <p class="tiny">朝の運転がある日は、時間に余裕を持って、起きたらまず光を浴びてください。</p></div>`:""}
+
+  ${p.conflict?`<div class="card" style="border-color:#5A452A">
+    <div class="eyebrow" style="color:var(--lamp)">時間が足りません</div>
+    <p class="small">帰宅から就寝まで${p.slack}分。食事・入浴・ケアで${p.needBlock}分必要なので、このままだと最短でも <b>${unNight(p.feasibleN)}</b> になります。どれかを選んでください。</p>
+    <div class="row wrap"><button class="chip" data-fix="meal">食事を短く</button>
+    <button class="chip" data-fix="wait">湯上がりの待ちを詰める</button>
+    <button class="chip" data-fix="bed">就寝を15分遅らせる</button></div></div>`:""}
+
+  <div class="card">
+    <div class="eyebrow">今夜の時刻表</div>
+    <ul class="tt">${tl.map((x,i)=>`<li class="${tick[x.id]?"done":""} ${x.key?"key":""}" style="animation-delay:${i*45}ms">
+      <span class="t">${x.t}</span><span class="d"></span>
+      <span class="b">${h(x.b)}<em>${h(x.e||"")}</em>
+      <button class="tick" data-tick="${x.id}">${tick[x.id]?"できた":"記録する"}</button></span></li>`).join("")}</ul>
+    <div class="divider"></div>
+    <div class="kv"><span>カフェイン終了</span><b>${cafe}</b></div>
+    <div class="kv"><span>できれば食事は</span><b>${meal3} まで</b></div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">睡眠負債（直近${S.settings.debtWindow}日）</div>
+    <div class="row spread" style="align-items:flex-end">
+      <div class="big" style="${db.min<=0?"color:var(--lime)":""}">${db.min<=0?"なし":dur(db.min)}</div>
+      <div class="tiny" style="text-align:right">必要睡眠<br>${dur(db.need)} 基準</div>
+    </div>
+    <div class="meter" style="margin-top:10px"><i style="width:${Math.min(100,db.min/(db.need*0.7)*100)}%"></i></div>
+    <p class="small mut" style="margin:10px 0 0">${db.min<=0?"いまは負債なし。この形を保つのが目標です。"
+      :"1日あたり "+Math.min(60,Math.ceil(db.min/21))+"分 を3週間で返せます（就寝を"+Math.min(60,Math.ceil(db.min/21))+"分前倒し）。一度に返すことはできません。"}</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">約束とスタンプ</div>
+    <div class="stamps">${[...Array(7)].map((_,i)=>`<i class="${i<S.game.stamps?"on":""}">${i<S.game.stamps?"✓":i+1}</i>`).join("")}</div>
+    <div class="row wrap" style="margin-top:14px">
+      <span class="streak">連続 <b>${S.game.streak}</b> 日</span>
+      <span class="streak">カード <b>${S.game.cards}</b> 枚</span>
+      <span class="streak">保険 <b>${S.game.insurance}</b> 回</span>
+    </div>
+    ${pr?`<p class="small" style="margin:6px 0 0">昨夜：${pr.ok===null?"免除日":(pr.ok?"<span class='badge ok'>達成</span>":"<span class='badge'>未達</span>")} <span class="mut">${h(pr.why)}</span></p>`:""}
+    <p class="tiny" style="margin-top:8px">スコアと達成は翌朝に表示します。寝る前に点数を気にすると寝つきが悪くなるためです。</p>
+  </div>
+
+  <button class="btn block" data-go="log">朝の記録をつける</button>`;
+}
+
+/* ---- 記録 ---- */
+let logDate=null;
+function renderLog(){
+  const d=logDate||today();
+  const r=S.records[d]||{};
+  const prev=addDays(d,-1), p=plan(prev), sc=score(d);
+  el("v-log").innerHTML=`
+  <div class="mast"><h2>記録</h2><p>${md(d)}（${dow(d)}）の 朝</p></div>
+  <div class="card">
+    <div class="row spread"><button class="chip" data-day="-1">← 前の日</button>
+      <span class="small mut">${d}</span>
+      <button class="chip" data-day="1">次の日 →</button></div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">必須・朝の 3 問</div>
+    ${scale("refreshed","スッキリ度（1 だるい ← → 5 快調）",r.refreshed)}
+    ${scale("ease","寝つきの良さ（1 悪い ← → 5 良い）",r.ease)}
+    <label class="f"><span>夜中に目が覚めた回数</span><input id="f-awake" type="number" min="0" max="10" value="${r.awakenings??""}" placeholder="0"></label>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">時 刻</div>
+    <div class="grid2">
+      <label class="f"><span>布団に入った時刻</span><input id="f-inBed" type="time" value="${r.inBed||""}"></label>
+      <label class="f"><span>起きた時刻</span><input id="f-wake" type="time" value="${r.wake||""}"></label>
+    </div>
+    <label class="f"><span>寝つくまでにかかった体感（分）</span><input id="f-lat" type="number" min="0" max="180" value="${r.latency??""}" placeholder="${S.settings.latencyMin}"></label>
+    <div class="row wrap" style="margin-top:12px">
+      <button class="chip" data-t="alarmUsed" aria-pressed="${!!r.alarmUsed}">アラームで起きた</button>
+      <button class="chip" data-t="isFreeDay" aria-pressed="${!!r.isFreeDay}">自由に寝られた日</button>
+    </div>
+    <p class="tiny" style="margin-top:8px">「自由に寝られた日」＝目覚ましなしで自然に起きた日。必要睡眠時間の推定にいちばん効く項目です。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">バンドの数値（Mi Fitness から転記）</div>
+    <label class="f"><span>総睡眠時間（分）</span><input id="f-band" type="number" min="0" max="900" value="${r.bandTotal??""}" placeholder="例 430"></label>
+    <div class="grid2">
+      <label class="f"><span>深い（分）</span><input id="f-deep" type="number" value="${r.deep??""}"></label>
+      <label class="f"><span>レム（分）</span><input id="f-rem" type="number" value="${r.rem??""}"></label>
+    </div>
+    <label class="f"><span>睡眠スコア（バンド）</span><input id="f-bs" type="number" value="${r.bandScore??""}"></label>
+    <p class="tiny" style="margin-top:8px">深い睡眠とレムは<b>参考値</b>です。機器推定なので絶対値は当てになりません。スコアや負債の計算には使いません。自分の平常値との差だけ見てください。</p>
+    ${discrepancy(r)?`<p class="small" style="color:var(--lamp);margin-top:8px">この日はバンドの数字と体感が食い違っています。こういう日は<b>体感を優先</b>します。</p>`:""}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">夜の行動</div>
+    <div class="row wrap">
+      ${["tub:湯船","shower:シャワー","none:入浴なし"].map(s=>{const[k,n]=s.split(":");
+        return `<button class="chip" data-bath="${k}" aria-pressed="${r.bathType===k}">${n}</button>`}).join("")}
+    </div>
+    <div class="grid2">
+      <label class="f"><span>湯船から出た時刻</span><input id="f-bathEnd" type="time" value="${r.bathEnd||""}"></label>
+      <label class="f"><span>最後の食事の時刻</span><input id="f-meal" type="time" value="${r.mealTime||""}"></label>
+    </div>
+    <div class="row wrap" style="margin-top:12px">
+      ${["軽め","普通","しっかり"].map(n=>`<button class="chip" data-mw="${n}" aria-pressed="${r.mealWeight===n}">${n}</button>`).join("")}
+    </div>
+    <div class="grid2">
+      <label class="f"><span>最後のカフェイン</span><input id="f-caf" type="time" value="${r.caffeineTime||""}"></label>
+      <label class="f"><span>昼寝（分）</span><input id="f-nap" type="number" value="${r.napMin??""}"></label>
+    </div>
+    <div class="row wrap" style="margin-top:12px">
+      <button class="chip" data-t="soundUsed" aria-pressed="${!!r.soundUsed}">入眠サウンドを使った</button>
+      <button class="chip" data-t="gymDone" aria-pressed="${!!r.gymDone}">ジムに行った</button>
+      <button class="chip" data-t="alcohol" aria-pressed="${!!r.alcohol}">お酒を飲んだ</button>
+    </div>
+    <label class="f"><span>メモ</span><textarea id="f-note">${h(r.note||"")}</textarea></label>
+  </div>
+
+  <button class="btn block" data-save="1">保存する</button>
+
+  ${sc?`<div class="card" style="margin-top:14px">
+    <div class="eyebrow">この日のスコア</div>
+    <div class="row spread" style="align-items:flex-end"><div class="big">${sc.total}<small style="font-size:15px" class="mut">/100</small></div>
+    <div class="tiny">睡眠時間 ${dur(sleepMin(S.records[d])||0)}・確度 ${conf(S.records[d])}</div></div>
+    <div class="stat" style="margin-top:12px">
+      <div><b>${sc.dur}</b><span>時間 /40</span></div>
+      <div><b>${sc.reg}</b><span>規則性 /30</span></div>
+      <div><b>${sc.ref}</b><span>休養感 /30</span></div></div>
+  </div>`:""}`;
+}
+function scale(k,label,v){
+  return `<label class="f"><span>${label}</span></label><div class="row" style="margin-top:6px">
+    ${[1,2,3,4,5].map(n=>`<button class="chip" data-sc="${k}:${n}" aria-pressed="${v===n}" style="flex:1">${n}</button>`).join("")}</div>`;
+}
+
+/* ---- 予定・シフト ---- */
+function renderShift(){
+  const base=logDate||today();
+  const y=Number(base.split("-")[0]), m=Number(base.split("-")[1]);
+  const first=new Date(y,m-1,1), lastD=new Date(y,m,0).getDate(), pad0=first.getDay();
+  let cells="";
+  for(let i=0;i<pad0;i++) cells+=`<div class="d empty"></div>`;
+  for(let day=1;day<=lastD;day++){
+    const ds=y+"-"+pad(m)+"-"+pad(day), sh=S.shifts[ds], pl=S.plans[ds];
+    let cls="d"; if(sh){ cls+=" work"; const p=plan(ds); if(p.isLate) cls+=" late"; }
+    cells+=`<button class="${cls}" data-edit="${ds}"><b>${day}</b>
+      ${sh?`<em>${h(sh.place.slice(0,3))}</em><em>${h(sh.start)}–${h(sh.actualEnd||sh.end)}</em>`:""}
+      ${pl?`<em>◇${h((pl.title||"予定").slice(0,4))}</em>`:""}</button>`;
+  }
+  const lateN=Object.keys(S.shifts).filter(d=>d.startsWith(y+"-"+pad(m))&&plan(d).isLate).length;
+  const workN=Object.keys(S.shifts).filter(d=>d.startsWith(y+"-"+pad(m))).length;
+  el("v-shift").innerHTML=`
+  <div class="mast"><h2>予定</h2><p>${y} 年 ${m} 月　勤務 ${workN}日・遅番 ${lateN}日</p></div>
+  <div class="card">
+    <div class="row spread"><button class="chip" data-mon="-1">← 前の月</button>
+      <button class="chip" data-mon="1">次の月 →</button></div>
+    <div class="cal" style="margin-top:12px">
+      ${"日月火水木金土".split("").map(x=>`<div class="h">${x}</div>`).join("")}${cells}
+    </div>
+    <p class="tiny" style="margin-top:10px">枠をタップして編集。琥珀色は遅番日です。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">シフトボードのテキストを貼る</div>
+    <textarea id="f-paste" placeholder="08/08（土）17:00 - 23:30
+- やきとり
+08/09（日）16:00 - 21:00
+- エブリー" style="min-height:130px;font-family:var(--mono);font-size:13px"></textarea>
+    <label class="f"><span>年</span><input id="f-year" type="number" value="${y}"></label>
+    <button class="btn block dawn" style="margin-top:12px" data-parse="1">読み込む</button>
+    <p class="tiny" style="margin-top:8px">貼り付けた最初と最後の日付を取り込み期間とみなし、その間で行のない日は「バイトなし」として確定します。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">今夜だけ起床時刻を変える</div>
+    <label class="f"><span>${md(addDays(today(),1))}（${dow(addDays(today(),1))}）の起床</span>
+      <input id="f-ov" type="time" value="${S.overrides[addDays(today(),1)]?.wake||""}"></label>
+    <button class="btn ghost block" style="margin-top:12px" data-ov="1">この朝だけ適用</button>
+    <p class="tiny" style="margin-top:8px">予定を登録しなくても、これだけで今夜の逆算が全部前倒しになります。</p>
+  </div>`;
+}
+function editSheet(ds){
+  const sh=S.shifts[ds]||{}, pl=S.plans[ds]||{};
+  el("sheet").innerHTML=`<div class="sheet" data-close="1"><div class="in" onclick="event.stopPropagation()">
+    <div class="row spread"><div class="serif" style="font-size:18px">${md(ds)}（${dow(ds)}）</div>
+      <button class="chip" data-close="1">閉じる</button></div>
+    <div class="divider"></div>
+    <div class="eyebrow">バイト</div>
+    <label class="f"><span>勤務先</span><select id="e-place">
+      <option value="">（なし）</option>
+      ${Object.keys(S.settings.places).map(p=>`<option ${sh.place===p?"selected":""}>${h(p)}</option>`).join("")}
+    </select></label>
+    <div class="grid2">
+      <label class="f"><span>開始</span><input id="e-start" type="time" value="${sh.start||""}"></label>
+      <label class="f"><span>終了（予定）</span><input id="e-end" type="time" value="${sh.end||""}"></label>
+    </div>
+    <label class="f"><span>実際に上がった時刻（早上がり・残業）</span><input id="e-ae" type="time" value="${sh.actualEnd||""}"></label>
+    <div class="row wrap" style="margin-top:12px">
+      <button class="chip" data-gym="1" aria-pressed="${sh.gym!==false}">退勤後にジム</button>
+    </div>
+    <div class="divider"></div>
+    <div class="eyebrow">その他の予定</div>
+    <label class="f"><span>内容</span><input id="e-title" value="${h(pl.title||"")}" placeholder="用事・遊び・旅行"></label>
+    <div class="grid2">
+      <label class="f"><span>開始時刻</span><input id="e-pst" type="time" value="${pl.startTime||""}"></label>
+      <label class="f"><span>移動（分）</span><input id="e-ptr" type="number" value="${pl.travelMin??""}" placeholder="20"></label>
+    </div>
+    <button class="btn block" style="margin-top:16px" data-esave="${ds}">保存</button>
+    <button class="btn ghost block" style="margin-top:8px" data-edel="${ds}">この日の予定を消す</button>
+  </div></div>`;
+}
+function parseShiftBoard(text,year){
+  const lines=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const out=[]; let pending=null;
+  const reDate=/^(\d{1,2})\s*[\/\-月]\s*(\d{1,2})日?\s*[（(]?([日月火水木金土])?[)）]?\s*(\d{1,2}):(\d{2})\s*[-–~〜]\s*(\d{1,2}):(\d{2})/;
+  for(const L of lines){
+    if(/シフトボード|で作成/.test(L)) continue;
+    const m=L.match(reDate);
+    if(m){
+      if(pending) out.push(pending);
+      const M=Number(m[1]),D=Number(m[2]);
+      let eh=Number(m[6]); const em=m[7];
+      const end=(eh>=24? pad(eh-24):pad(eh))+":"+em;
+      pending={date:year+"-"+pad(M)+"-"+pad(D), start:pad(Number(m[4]))+":"+m[5], end, place:""};
+      continue;
+    }
+    const p=L.match(/^[-・･•]\s*(.+)$/);
+    if(p&&pending){ pending.place=p[1].trim(); out.push(pending); pending=null; }
+  }
+  if(pending) out.push(pending);
+  return out;
+}
+function applyShifts(list){
+  if(!list.length){ toast("読み取れる行がありませんでした"); return; }
+  const dates=list.map(x=>x.date).sort();
+  const from=dates[0], to=dates[dates.length-1];
+  for(let d=from; d<=to; d=addDays(d,1)) delete S.shifts[d];
+  list.forEach(x=>{
+    if(x.place && !S.settings.places[x.place])
+      S.settings.places[x.place]={commuteMin:25,afterMin:0,afterLabel:"",mealMin:15,mealWeight:"普通"};
+    S.shifts[x.date]={place:x.place||"バイト",start:x.start,end:x.end,gym:true};
+  });
+  S.range={from,to}; save();
+  const late=list.filter(x=>plan(x.date).isLate).length;
+  toast(list.length+"件を読み込みました（遅番 "+late+"日）");
+  render();
+}
+
+/* ---- 分析 ---- */
+function renderAnalyze(){
+  const est=estimateNeed(), db=debt(), sj=socialJetlag(), rs=recArr();
+  const days=rs.length;
+  const withScore=rs.map(r=>({d:r.date,s:score(r.date)})).filter(x=>x.s);
+  const avg=withScore.length?Math.round(withScore.reduce((a,b)=>a+b.s.total,0)/withScore.length):null;
+  const spark=db.series.map(x=>x.v);
+  const mx=Math.max(60,...spark);
+  el("v-analyze").innerHTML=`
+  <div class="mast"><h2>分析</h2><p>記録 ${days} 日</p></div>
+
+  <div class="card">
+    <div class="eyebrow">必要睡眠時間</div>
+    <div class="big">${dur(est.value)}</div>
+    <p class="small mut" style="margin:6px 0 0">確度：${est.conf}　根拠：${h(est.how)}</p>
+    ${days<14?`<p class="tiny" style="margin-top:8px">記録が14日たまると推定が安定します（あと${14-days}日）。いまは暫定値です。</p>`:""}
+    <div class="divider"></div>
+    <p class="small">自由に寝られた日：${rs.filter(r=>r.isFreeDay&&!r.alarmUsed).length}日／スッキリ度4以上：${rs.filter(r=>(r.refreshed||0)>=4).length}日</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">睡眠負債の推移</div>
+    <svg viewBox="0 0 300 70" style="width:100%;height:70px">
+      <polyline fill="none" stroke="#E3A857" stroke-width="2"
+        points="${spark.map((v,i)=>(i*(300/(spark.length-1||1))).toFixed(1)+","+(66-v/mx*58).toFixed(1)).join(" ")}"/>
+    </svg>
+    <div class="row spread"><span class="tiny">${md(db.series[0].date)}</span><span class="tiny">今日</span></div>
+    <div class="divider"></div>
+    <div class="kv"><span>現在の負債</span><b>${dur(db.min)}</b></div>
+    <div class="kv"><span>返済プラン</span><b>1日 ${Math.min(60,Math.ceil(db.min/21))}分 × 3週間</b></div>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">社会的ジェットラグ</div>
+    ${sj?`<div class="big">${durShort(sj.min)}</div>
+      <p class="small mut" style="margin:6px 0 0">制約のある日 ${sj.nc}日と自由な日 ${sj.nf}日 の睡眠中央時刻の差</p>
+      <p class="small" style="margin-top:8px">${sj.min>=120?"<span class='badge bad'>2時間超</span> リスクが指摘される線を超えています。自由な日の起床を早める方が効きます。"
+        :sj.min>=60?"<span class='badge warn'>1〜2時間</span> 許容範囲ですが、月曜の朝に出ます。":"<span class='badge ok'>良好</span> このリズムを保ってください。"}</p>`
+      :`<p class="small mut">制約のある日と自由な日が2日ずつたまると計算できます。</p>`}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">行動と翌朝のスッキリ度</div>
+    ${corrTable()}
+    <p class="tiny" style="margin-top:10px">各群5日未満は数字を出しません。これは相関で、因果ではありません。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">スコア平均</div>
+    ${avg!=null?`<div class="big">${avg}<small style="font-size:15px" class="mut">/100</small></div>`:`<p class="small mut">記録が増えると出ます。</p>`}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">バッジ</div>
+    <div class="row wrap">${BADGES.map(b=>`<span class="chip" aria-pressed="${S.game.badges.includes(b.id)}">${h(b.n)}</span>`).join("")}</div>
+    <p class="tiny" style="margin-top:8px">${h(BADGES.filter(b=>!S.game.badges.includes(b.id)).map(b=>b.n+"："+b.d).join(" / "))}</p>
+  </div>`;
+}
+function corrTable(){
+  const rs=recArr().filter(r=>r.refreshed);
+  const tests=[
+    ["湯船に入った", r=>r.bathType==="tub"],
+    ["湯上がりから60分以上あけた", r=>{ if(!r.bathEnd||!r.inBed)return false; let a=night(r.bathEnd),b=night(r.inBed); if(b<a)b+=1440; return b-a>=60; }],
+    ["食事から3時間以上あけた", r=>{ if(!r.mealTime||!r.inBed)return false; let a=night(r.mealTime),b=night(r.inBed); if(b<a)b+=1440; return b-a>=180; }],
+    ["入眠サウンドを使った", r=>!!r.soundUsed],
+    ["ジムに行った", r=>!!r.gymDone],
+    ["お酒を飲んだ", r=>!!r.alcohol],
+    ["昼寝をした", r=>(r.napMin||0)>0]
+  ];
+  const rows=tests.map(([n,f])=>{
+    const a=rs.filter(f).map(r=>r.refreshed), b=rs.filter(r=>!f(r)).map(r=>r.refreshed);
+    if(a.length<5||b.length<5) return `<div class="kv"><span>${n}</span><b class="mut">データ不足 ${a.length}/${b.length}</b></div>`;
+    const d=(a.reduce((x,y)=>x+y,0)/a.length)-(b.reduce((x,y)=>x+y,0)/b.length);
+    return `<div class="kv"><span>${n}</span><b style="color:${d>0.2?"var(--ok)":d<-0.2?"var(--alert)":"var(--ink2)"}">${d>0?"+":""}${d.toFixed(1)} <span class="tiny">(${a.length}/${b.length}日)</span></b></div>`;
+  });
+  return rows.join("");
+}
+
+/* ---- 知識 ---- */
+function renderKnow(){
+  if(openArt){ renderArticle(openArt); return; }
+  const feat=ART.filter(a=>a.no.startsWith("特集")), rest=ART.filter(a=>!a.no.startsWith("特集"));
+  const readN=Object.keys(S.read).length;
+  const lead=feat[0];
+  el("v-know").innerHTML=`
+  <div class="mast"><h2>知識</h2><p>睡眠を読む　${readN} / ${ART.length} 本 読了</p></div>
+
+  <div class="card" style="background:#0F1626">
+    <div class="eyebrow">根拠の表示について</div>
+    <div class="row wrap" style="gap:6px">
+      <span class="ev e3">★★★ 確立</span><span class="ev e2">★★ 有力</span>
+      <span class="ev e1">★ 検証中</span><span class="ev myth">⚠ 俗説</span>
+    </div>
+    <p class="tiny" style="margin-top:8px">どこまで立証されているかを、記事ごとに明記します。「科学的に正しい」を装わないためです。</p>
+  </div>
+
+  <div class="lead">
+    <div class="body">
+      <div class="row spread"><span class="kicker">${lead.no}</span><span class="ev ${EVL[lead.ev].c}">${EVL[lead.ev].t}</span></div>
+      <h3 class="serif">${h(lead.t)}</h3>
+      <p class="small mut">${h(lead.lead)}</p>
+      <button class="btn" style="margin-top:12px" data-art="${lead.id}">読む　${lead.min}分</button>
+    </div>
+  </div>
+
+  <div class="eyebrow" style="margin-top:18px">特集・最高の睡眠</div>
+  <div class="artgrid">${feat.slice(1).map(card).join("")}</div>
+
+  <div class="eyebrow" style="margin-top:22px">基礎・検証・安全</div>
+  <div class="artgrid">${rest.map(card).join("")}</div>`;
+}
+function card(a){
+  const ok=unlocked(a);
+  return `<button class="art ${ok?"":"locked"}" ${ok?`data-art="${a.id}"`:""}>
+    <div class="row spread"><span class="no">${a.no}</span>
+      <span class="row" style="gap:6px">${S.read[a.id]?`<span class="badge ok">読了</span>`:""}<span class="ev ${EVL[a.ev].c}">${EVL[a.ev].t}</span></span></div>
+    <h4>${h(a.t)}</h4>
+    <p class="tiny">${ok?h(a.lead):"記録"+a.unlock.split(":")[1]+"日で読めます"}</p></button>`;
+}
+function renderArticle(id){
+  const a=ART.find(x=>x.id===id); if(!a){ openArt=null; return renderKnow(); }
+  el("v-know").innerHTML=`
+  <button class="chip" data-art="">← 一覧へ</button>
+  <article class="read" style="margin-top:14px">
+    <div class="row spread"><span class="kicker">${a.no}</span><span class="ev ${EVL[a.ev].c}">${EVL[a.ev].t}</span></div>
+    <h2>${h(a.t)}</h2>
+    <p class="tiny">読了 ${a.min}分</p>
+    <p class="leadp">${h(a.lead)}</p>
+    <div class="concl"><b>結 論</b>${h(a.concl)}</div>
+    ${a.body.map(s=>`<h3>${h(s.h)}</h3><p>${h(s.p)}</p>`).join("")}
+    <div class="fig"><div class="eyebrow">根拠の強さについて</div><p class="small" style="margin:0">${h(a.ev2)}</p></div>
+    <div class="src"><div class="eyebrow">出 典</div>${a.src.map(s=>`<div>${h(s)}</div>`).join("")}</div>
+    <button class="btn block" style="margin-top:18px" data-read="${a.id}">${S.read[a.id]?"読了済み":"読了にする（+10pt）"}</button>
+  </article>`;
+}
+
+/* ---- 設定 ---- */
+function renderSet(){
+  const s=S.settings;
+  el("v-set").innerHTML=`
+  <div class="mast"><h2>設定</h2><p>しきい値は いつでも 変更できます</p></div>
+
+  <div class="card">
+    <div class="eyebrow">遅番の判定</div>
+    <label class="f"><span>この時刻以降を遅番とする</span><input id="s-lt" type="time" value="${s.lateThreshold}"></label>
+    <label class="f"><span>判定に使う基準</span><select id="s-lb">
+      <option value="home" ${s.lateBasis==="home"?"selected":""}>帰宅時刻</option>
+      <option value="end" ${s.lateBasis==="end"?"selected":""}>終業時刻</option></select></label>
+    <label class="f"><span>遅番日の達成条件：帰宅から◯分以内に就寝</span><input id="s-lg" type="number" value="${s.lateGraceMin}"></label>
+    <label class="f"><span>遅番日の扱い</span><select id="s-lh">
+      <option value="lateMode" ${s.lateHandling==="lateMode"?"selected":""}>遅番モード（別基準で評価）</option>
+      <option value="exempt" ${s.lateHandling==="exempt"?"selected":""}>完全に免除する</option></select></label>
+    <p class="tiny" style="margin-top:8px">変更しても、過去に取ったスタンプは取り消しません。変更した日以降だけ新しい設定が使われます。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">時間の実測値</div>
+    <div class="grid2">
+      <label class="f"><span>入浴（分）</span><input id="s-bath" type="number" value="${s.bathMin}"></label>
+      <label class="f"><span>湯上がりのケア（分）</span><input id="s-care" type="number" value="${s.careMin}"></label>
+    </div>
+    <div class="grid2">
+      <label class="f"><span>寝つきにかかる（分）</span><input id="s-lat" type="number" value="${s.latencyMin}"></label>
+      <label class="f"><span>支度（分）</span><input id="s-prep" type="number" value="${s.prepMin}"></label>
+    </div>
+    <label class="f"><span>通常日の達成幅（目標±分）</span><input id="s-nw" type="number" value="${s.normalWindowMin}"></label>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">起床と時期</div>
+    <label class="f"><span>いまの時期</span><select id="s-preset">
+      <option value="vacation" ${s.preset==="vacation"?"selected":""}>休み中</option>
+      <option value="school" ${s.preset==="school"?"selected":""}>学校がある</option>
+      <option value="auto" ${s.preset==="auto"?"selected":""}>月で自動（9月〜を学校）</option></select></label>
+    <div class="grid2">
+      <label class="f"><span>学校日の起床</span><input id="s-sw" type="time" value="${s.schoolWake}"></label>
+      <label class="f"><span>休み中の起床上限</span><input id="s-cap" type="time" value="${s.vacationWakeCap}"></label>
+    </div>
+    <label class="f"><span>必要睡眠時間を手動で指定（分・空欄で自動）</span><input id="s-need" type="number" value="${s.needMin??""}" placeholder="${estimateNeed().value}"></label>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">勤務先</div>
+    ${Object.entries(s.places).map(([k,p])=>`
+      <div class="divider"></div>
+      <div class="serif" style="font-size:15px">${h(k)}</div>
+      <div class="grid2">
+        <label class="f"><span>移動（分）</span><input data-pl="${h(k)}:commuteMin" type="number" value="${p.commuteMin??""}"></label>
+        <label class="f"><span>退勤後（分）</span><input data-pl="${h(k)}:afterMin" type="number" value="${p.afterMin??0}"></label>
+      </div>
+      <div class="grid2">
+        <label class="f"><span>退勤後の内容</span><input data-pl="${h(k)}:afterLabel" value="${h(p.afterLabel||"")}"></label>
+        <label class="f"><span>食事（分）</span><input data-pl="${h(k)}:mealMin" type="number" value="${p.mealMin??15}"></label>
+      </div>
+      ${p.fixedArrival!==undefined?`<label class="f"><span>終電での帰宅時刻</span><input data-pl="${h(k)}:fixedArrival" type="time" value="${p.fixedArrival}"></label>`:""}
+    `).join("")}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">負債の計算</div>
+    <div class="grid2">
+      <label class="f"><span>集計する日数</span><input id="s-dw" type="number" value="${s.debtWindow}"></label>
+      <label class="f"><span>寝すぎ分の返済係数</span><input id="s-sw2" type="number" step="0.1" min="0" max="1" value="${s.surplusWeight}"></label>
+    </div>
+    <p class="tiny" style="margin-top:8px">係数0.5は「寝だめでは完全に返せない」ことを反映した設計値で、厳密な根拠のある数値ではありません。</p>
+  </div>
+
+  <button class="btn block" data-ssave="1">設定を保存</button>
+  <div class="divider"></div>
+  <div class="card">
+    <div class="eyebrow">データ</div>
+    <p class="small" style="margin:0 0 12px">保存先：${STORE_OK?"この端末（自動保存されています）":"<b style='color:var(--rose)'>保存できていません</b>"}／記録 ${Object.keys(S.records).length}日分</p>
+    <button class="btn ghost block" data-dl="1">バックアップをファイルに保存</button>
+    <button class="btn ghost block" style="margin-top:10px" data-export="1">コピーして書き出す</button>
+    <label class="f" style="margin-top:14px"><span>バックアップファイルから戻す</span><input id="s-file" type="file" accept=".json,application/json"></label>
+    <label class="f"><span>または JSON を貼り付け</span><textarea id="s-imp"></textarea></label>
+    <button class="btn ghost block" style="margin-top:10px" data-import="1">読み込む</button>
+    <p class="tiny" style="margin-top:12px">記録は入力するたび自動保存されます。この端末の中だけに置かれるので、機種変更やブラウザのデータ削除の前に必ずバックアップを取ってください。</p>
+  </div>
+  <p class="tiny" style="text-align:center;margin:18px 0 30px">ねむログ v1.0 ／ 医療機器ではありません。診断はできません。<br>いびきの指摘や強い日中の眠気が続くときは、受診を検討してください。</p>`;
+}
+
+/* ============ イベント ============ */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-go],[data-ob],[data-goal],[data-c],[data-tick],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-hideinstall],[data-dl],[data-export],[data-import],[data-pl]");
+  if(!t) return;
+  const D=t.dataset;
+
+  if(D.go){ go(D.go); return; }
+  if(D.hideinstall){ S.game.hideInstall=true; save(); render(); return; }
+  if(D.ob){ obNext(Number(D.ob)); return; }
+  if(D.goal){ ob.tmp.goal=D.goal; renderOnboard(); return; }
+  if(D.c){ const[i,j]=D.c.split(":").map(Number); ob.tmp.chrono=ob.tmp.chrono||{}; ob.tmp.chrono[i]=j; renderOnboard(); return; }
+
+  if(D.tick){ const d=addDays(today(),1); const r=S.records[d]||(S.records[d]={});
+    r.ticks=r.ticks||{}; r.ticks[D.tick]=!r.ticks[D.tick]; save(); render(); return; }
+  if(D.fix){
+    if(D.fix==="meal"){ const sh=S.shifts[today()]; if(sh) S.settings.places[sh.place].mealMin=Math.max(8,(S.settings.places[sh.place].mealMin||15)-5); }
+    if(D.fix==="wait"){ S.settings.careMin=Math.max(10,S.settings.careMin-5); }
+    if(D.fix==="bed"){ S.settings.latencyMin=Math.max(5,S.settings.latencyMin-15); }
+    save(); toast("調整しました"); render(); return; }
+
+  if(D.day){ logDate=addDays(logDate||today(),Number(D.day)); render(); return; }
+  if(D.sc){ const[k,v]=D.sc.split(":"); const d=logDate||today(); const r=S.records[d]||(S.records[d]={});
+    r[k]=r[k]===Number(v)?null:Number(v); save(); renderLog(); return; }
+  if(D.t){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r[D.t]=!r[D.t]; save(); renderLog(); return; }
+  if(D.bath){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r.bathType=r.bathType===D.bath?null:D.bath; save(); renderLog(); return; }
+  if(D.mw){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r.mealWeight=r.mealWeight===D.mw?null:D.mw; save(); renderLog(); return; }
+  if(D.save){ saveLog(); return; }
+
+  if(D.mon){ const b=logDate||today(); const dt=parseISO(b); dt.setMonth(dt.getMonth()+Number(D.mon),1); logDate=iso(dt); renderShift(); return; }
+  if(D.edit){ editSheet(D.edit); return; }
+  if(D.close!==undefined){ el("sheet").innerHTML=""; return; }
+  if(D.gym){ t.setAttribute("aria-pressed", t.getAttribute("aria-pressed")==="true"?"false":"true"); return; }
+  if(D.esave){ saveEdit(D.esave); return; }
+  if(D.edel){ delete S.shifts[D.edel]; delete S.plans[D.edel]; save(); el("sheet").innerHTML=""; renderShift(); return; }
+  if(D.parse){ const y=Number(el("f-year").value)||new Date().getFullYear();
+    applyShifts(parseShiftBoard(el("f-paste").value,y)); return; }
+  if(D.ov){ const v=el("f-ov").value, d=addDays(today(),1);
+    if(v) S.overrides[d]={wake:v}; else delete S.overrides[d]; save(); toast(v?d+" の起床を "+v+" に":"解除しました"); return; }
+
+  if(D.art!==undefined){ openArt=D.art||null; renderKnow(); window.scrollTo(0,0); return; }
+  if(D.read){ if(!S.read[D.read]){ S.read[D.read]=true; S.game.points+=10; refreshGame(); save(); toast("読了 +10pt"); } renderArticle(D.read); return; }
+
+  if(D.ssave){ saveSettings(); return; }
+  if(D.dl){ const blob=new Blob([JSON.stringify(S,null,1)],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="nemulog-backup-"+today()+".json"; document.body.appendChild(a); a.click(); a.remove();
+    toast("バックアップを保存しました"); return; }
+  if(D.export){ const s=JSON.stringify(S);
+    navigator.clipboard?.writeText(s).then(()=>toast("クリップボードにコピーしました"),()=>toast("コピーできませんでした"));
+    return; }
+  if(D.import){ try{ S=merge(deep(DEFAULTS),JSON.parse(el("s-imp").value)); save(); toast("読み込みました"); render(); }
+    catch(err){ toast("JSONが読めませんでした"); } return; }
+});
+function obNext(step){
+  if(step===1){
+    ob.tmp.name=el("ob-name").value.trim();
+    ob.tmp.usualBed=el("ob-bed").value; ob.tmp.usualWake=el("ob-wake").value;
+    if(!ob.tmp.name){ toast("呼び名を入れてください"); return; }
+    ob.step=1;
+  } else if(step===2){
+    ob.tmp.schoolWake=el("ob-sw").value; ob.tmp.preset=el("ob-preset").value; ob.tmp.cap=el("ob-cap").value;
+    ob.step=2;
+  } else {
+    S.profile.name=ob.tmp.name; S.profile.usualBed=ob.tmp.usualBed; S.profile.usualWake=ob.tmp.usualWake;
+    S.profile.goal=ob.tmp.goal||"morning";
+    const c=ob.tmp.chrono||{}; const vals=Object.values(c);
+    S.profile.chronotype=vals.length? (vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+    S.settings.schoolWake=ob.tmp.schoolWake||"07:15";
+    S.settings.preset=ob.tmp.preset||"vacation";
+    S.settings.vacationWakeCap=ob.tmp.cap||"09:00";
+    S.profile.onboarded=true; save(); go("home"); toast("はじめましょう"); return;
+  }
+  renderOnboard();
+}
+function saveLog(){
+  const d=logDate||today(); const r=S.records[d]||(S.records[d]={});
+  const g=(id,num)=>{ const v=el(id)?.value; if(v===""||v==null) return null; return num?Number(v):v; };
+  r.inBed=g("f-inBed"); r.wake=g("f-wake"); r.latency=g("f-lat",1);
+  r.awakenings=g("f-awake",1); r.bandTotal=g("f-band",1); r.deep=g("f-deep",1); r.rem=g("f-rem",1); r.bandScore=g("f-bs",1);
+  r.bathEnd=g("f-bathEnd"); r.mealTime=g("f-meal"); r.caffeineTime=g("f-caf"); r.napMin=g("f-nap",1);
+  r.note=el("f-note").value;
+  if(r.bathEnd&&r.inBed){ let a=night(r.bathEnd),b=night(r.inBed); if(b<a)b+=1440; r.bathWait=b-a; }
+  // 約束の判定とスタンプ
+  const pr=promiseResult(addDays(d,-1));
+  if(pr&&pr.ok===true&&!r.stamped){ r.stamped=true; S.game.stamps++; S.game.streak++;
+    if(plan(addDays(d,-1)).isLate) S.game.lateWins=(S.game.lateWins||0)+1;
+    const sc=score(d); S.game.points+=sc?Math.round(sc.total/5):10;
+    if(S.game.stamps>=7){ S.game.stamps=0; S.game.cards++; S.game.points+=100; toast("スタンプカード達成 +100pt"); }
+    else toast("約束を守れました。スタンプ +1");
+  } else if(pr&&pr.ok===false&&!r.stamped){
+    if(S.game.insurance>0){ S.game.insurance--; toast("未達ですが保険で連続記録を維持しました"); }
+    else { S.game.streak=0; }
+  }
+  refreshGame(); save(); toast("保存しました"); render();
+}
+function saveEdit(ds){
+  const place=el("e-place").value, start=el("e-start").value, end=el("e-end").value, ae=el("e-ae").value;
+  const gym=document.querySelector("[data-gym]")?.getAttribute("aria-pressed")==="true";
+  if(place&&start&&end) S.shifts[ds]={place,start,end,actualEnd:ae||null,gym};
+  else delete S.shifts[ds];
+  const title=el("e-title").value.trim(), pst=el("e-pst").value;
+  if(title||pst) S.plans[ds]={title,startTime:pst||null,travelMin:Number(el("e-ptr").value)||20};
+  else delete S.plans[ds];
+  save(); el("sheet").innerHTML=""; renderShift(); toast("保存しました");
+}
+function saveSettings(){
+  const s=S.settings;
+  s.lateThreshold=el("s-lt").value; s.lateBasis=el("s-lb").value;
+  s.lateGraceMin=Number(el("s-lg").value)||90; s.lateHandling=el("s-lh").value;
+  s.bathMin=Number(el("s-bath").value)||22; s.careMin=Number(el("s-care").value)||20;
+  s.latencyMin=Number(el("s-lat").value)||15; s.prepMin=Number(el("s-prep").value)||70;
+  s.normalWindowMin=Number(el("s-nw").value)||30;
+  s.preset=el("s-preset").value; s.schoolWake=el("s-sw").value; s.vacationWakeCap=el("s-cap").value;
+  s.needMin=el("s-need").value?Number(el("s-need").value):null;
+  s.debtWindow=Number(el("s-dw").value)||14; s.surplusWeight=Number(el("s-sw2").value);
+  document.querySelectorAll("[data-pl]").forEach(inp=>{
+    const[k,f]=inp.dataset.pl.split(":"); if(!s.places[k])return;
+    s.places[k][f]= inp.type==="number"? (Number(inp.value)||0) : inp.value;
+  });
+  save(); toast("設定を保存しました"); render();
+}
+
+document.addEventListener("change",e=>{
+  if(e.target && e.target.id==="s-file" && e.target.files && e.target.files[0]){
+    const fr=new FileReader();
+    fr.onload=()=>{ try{ S=merge(deep(DEFAULTS),JSON.parse(fr.result)); save(); toast("バックアップから戻しました"); render(); }
+      catch(err){ toast("このファイルは読めませんでした"); } };
+    fr.readAsText(e.target.files[0]);
+  }
+});
+
+/* ============ 起動 ============ */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+tabs(); render();
+</script>
+</body>
+</html>
