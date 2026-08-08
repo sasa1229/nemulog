@@ -68,7 +68,8 @@ nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(18
 
 /* ---- primitives ---- */
 .card{background:linear-gradient(180deg,var(--panel),#19243F);border:1px solid var(--line);
-  border-radius:var(--r);padding:18px;margin:0 0 15px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+  border-radius:var(--r);padding:18px;margin:0 0 15px;box-shadow:0 3px 0 rgba(0,0,0,.25);
+  overflow:hidden;min-width:0}
 .eyebrow{font-size:13px;font-weight:800;letter-spacing:.1em;color:var(--amber);margin:0 0 10px}
 .mut{color:var(--ink2)}
 .small{font-size:15px;line-height:1.7}
@@ -86,12 +87,16 @@ nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(18
   padding:11px 16px;border-radius:99px;font-size:15.5px;font-weight:700;min-height:46px}
 .chip[aria-pressed="true"]{background:linear-gradient(180deg,var(--amber),var(--amber2));
   border-color:var(--amber);color:#231605;box-shadow:0 3px 0 #B96F22}
-label.f{display:block;margin:14px 0 0;min-width:0}
+label.f{display:block;margin:14px 0 0}
 label.f span{display:block;font-size:14.5px;font-weight:700;color:var(--ink2);margin-bottom:7px}
-input,select,textarea{width:100%;min-width:0;background:#0E1526;border:2px solid var(--line);border-radius:13px;padding:13px 14px}
+input,select,textarea{width:100%;max-width:100%;min-width:0;background:#0E1526;
+  border:2px solid var(--line);border-radius:13px;padding:13px 12px;display:block}
+input[type="time"],input[type="number"],input[type="file"]{-webkit-appearance:none;appearance:none}
+input[type="time"]{text-align:center;padding-left:6px;padding-right:6px}
+input[type="file"]{font-size:14px;padding:10px}
 textarea{min-height:80px;resize:vertical;font-weight:500}
-.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:11px}
-.row>*{min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.grid2>*{min-width:0}
 .divider{height:1px;background:var(--line);margin:17px 0}
 .badge{font-size:13px;font-weight:800;padding:5px 11px;border-radius:99px;
   border:2px solid var(--line);color:var(--ink2)}
@@ -650,7 +655,8 @@ function tabs(){
   el("tabs").innerHTML=TABS.map(([k,g,n])=>
     `<button data-go="${k}" aria-current="${cur===k}"><span class="g">${g}</span>${n}</button>`).join("");
 }
-function go(k){ cur=k; openArt=null; V.forEach(v=>el("v-"+v).classList.toggle("on",v===k)); tabs(); render(); window.scrollTo(0,0); }
+function go(k){ cur=k; openArt=null; V.forEach(v=>el("v-"+v).classList.toggle("on",v===k)); importFromURL();
+tabs(); render(); window.scrollTo(0,0); }
 function toast(m){ const d=document.createElement("div"); d.className="toast"; d.textContent=m; document.body.appendChild(d);
   setTimeout(()=>d.remove(),2200); }
 function render(){
@@ -725,12 +731,41 @@ function renderHome(){
   const tick=S.records[addDays(d,1)]?.ticks||{};
   const cafe=unNight(p.bedN-360), meal3=unNight(p.bedN-180);
   const pr=promiseResult(addDays(d,-1));
+  const hh=new Date().getHours();
+  const rToday=S.records[d]||{};
+  const morningOpen = hh>=3 && hh<15;
+  const quick = morningOpen ? `
+  <div class="card" style="border-color:var(--amber)">
+    <div class="eyebrow">今朝の記録（タップだけ・15秒）</div>
+    ${rToday.wake? `<p class="small">起床 <b>${rToday.wake}</b> で記録しました</p>`
+      : `<button class="btn block" data-now="wake">いま起きた（起床時刻を記録）</button>`}
+    <div class="divider"></div>
+    <p class="small" style="margin:0 0 6px">スッキリ度</p>
+    <div class="row">${[1,2,3,4,5].map(n=>`<button class="chip" data-sc="refreshed:${n}" aria-pressed="${rToday.refreshed===n}" style="flex:1;padding:11px 0">${n}</button>`).join("")}</div>
+    <p class="small" style="margin:14px 0 6px">寝つきの良さ</p>
+    <div class="row">${[1,2,3,4,5].map(n=>`<button class="chip" data-sc="ease:${n}" aria-pressed="${rToday.ease===n}" style="flex:1;padding:11px 0">${n}</button>`).join("")}</div>
+    <p class="small" style="margin:14px 0 6px">夜中に目が覚めた回数</p>
+    <div class="row">${[0,1,2,3].map(n=>`<button class="chip" data-aw="${n}" aria-pressed="${rToday.awakenings===n}" style="flex:1;padding:11px 0">${n===3?"3+":n}</button>`).join("")}</div>
+    ${(rToday.refreshed&&rToday.ease&&rToday.awakenings!=null)
+      ? `<p class="small" style="margin:14px 0 0;color:var(--lime)"><b>3問そろいました。</b>これだけで分析は動きます。</p>`
+      : `<p class="tiny" style="margin:12px 0 0">タップした時点で自動保存されます。保存ボタンは要りません。</p>`}
+    <button class="btn dawn block" style="margin-top:12px" data-bandsheet="${d}">Xiaomiの数値を入力（30秒）</button>
+    <button class="btn ghost block" style="margin-top:8px" data-bulksheet="1">まとめて貼る（写真を送った分）</button>
+  </div>` : `
+  <div class="card">
+    <div class="eyebrow">寝るとき</div>
+    ${(S.records[addDays(d,1)]||{}).inBed
+      ? `<p class="small">就床 <b>${S.records[addDays(d,1)].inBed}</b> で記録しました</p>`
+      : `<button class="btn block" data-now="bed">おやすみ（布団に入った時刻を記録）</button>`}
+    <p class="tiny" style="margin-top:10px">押すだけで就床時刻が入ります。朝はこの画面に3問が出ます。</p>
+  </div>`;
   el("v-home").innerHTML=`
   ${!STORE_OK?`<div class="warnbar">この画面では記録を保存できません。ファイルを端末で開くか、GitHub Pages に置いて開いてください。</div>`:""}
   ${(!standalone&&!S.game.hideInstall)?`<div class="card" style="border-color:var(--dawn)"><div class="eyebrow" style="color:var(--dawn)">ホーム画面に追加すると使いやすくなります</div>
     <ol class="instr small"><li>Safari の共有ボタン（□に↑）を押す</li><li>「ホーム画面に追加」を選ぶ</li><li>名前は「ねむログ」でそのまま追加</li></ol>
     <p class="tiny" style="margin-top:10px">追加するとアドレスバーが消えて全画面になり、記録もそのまま残ります。</p>
     <button class="chip" style="margin-top:12px" data-hideinstall="1">この案内を閉じる</button></div>`:""}
+  ${quick}
   <div class="hero">
     <div class="label">今夜の目標就寝</div>
     <div class="time">${unNight(p.bedN)}</div>
@@ -791,7 +826,7 @@ function renderHome(){
     <p class="tiny" style="margin-top:8px">スコアと達成は翌朝に表示します。寝る前に点数を気にすると寝つきが悪くなるためです。</p>
   </div>
 
-  <button class="btn block" data-go="log">朝の記録をつける</button>`;
+  <button class="btn ghost block" data-go="log">記録を開く（バンドの数値・夜の行動）</button>`;
 }
 
 /* ---- 記録 ---- */
@@ -831,6 +866,9 @@ function renderLog(){
 
   <div class="card">
     <div class="eyebrow">バンドの数値（Mi Fitness から転記）</div>
+    <button class="btn dawn block" style="margin-bottom:10px" data-bandsheet="${d}">Xiaomiの画面の順に入力する</button>
+    <button class="btn ghost block" data-bulksheet="1">写真を送った分をまとめて貼る</button>
+    <p class="tiny" style="margin-top:8px">Xiaomiのスクショをこのチャットに送ると、貼るだけで済むブロックにして返します。</p>
     <label class="f"><span>総睡眠時間（分）</span><input id="f-band" type="number" min="0" max="900" value="${r.bandTotal??""}" placeholder="例 430"></label>
     <div class="grid2">
       <label class="f"><span>深い（分）</span><input id="f-deep" type="number" value="${r.deep??""}"></label>
@@ -838,6 +876,15 @@ function renderLog(){
     </div>
     <label class="f"><span>睡眠スコア（バンド）</span><input id="f-bs" type="number" value="${r.bandScore??""}"></label>
     <p class="tiny" style="margin-top:8px">深い睡眠とレムは<b>参考値</b>です。機器推定なので絶対値は当てになりません。スコアや負債の計算には使いません。自分の平常値との差だけ見てください。</p>
+    <div class="divider"></div>
+    <label class="f"><span>Mi Fitness の数値を貼り付けて取り込む</span>
+      <textarea id="f-bandpaste" placeholder="睡眠時間 7時間10分
+深い睡眠 1時間20分
+レム 1時間40分
+覚醒 2回
+睡眠スコア 82" style="font-size:15px"></textarea></label>
+    <button class="btn dawn block" style="margin-top:10px" data-bandparse="1">この文章から取り込む</button>
+    <p class="tiny" style="margin-top:8px">数字と項目名が入っていれば、順番や体裁は自由です。読み取れた分だけ上の欄に入ります。</p>
     ${discrepancy(r)?`<p class="small" style="color:var(--lamp);margin-top:8px">この日はバンドの数字と体感が食い違っています。こういう日は<b>体感を優先</b>します。</p>`:""}
   </div>
 
@@ -877,6 +924,116 @@ function renderLog(){
       <div><b>${sc.reg}</b><span>規則性 /30</span></div>
       <div><b>${sc.ref}</b><span>休養感 /30</span></div></div>
   </div>`:""}`;
+}
+function hmPair(h,m){ const H=Number(h||0), M=Number(m||0); return (isNaN(H)?0:H)*60+(isNaN(M)?0:M); }
+function splitHM(min){ if(min==null||isNaN(min)) return ["",""]; return [Math.floor(min/60), min%60]; }
+function bulkSheet(){
+  el("sheet").innerHTML=`<div class="sheet"><div class="in">
+    <div class="row spread"><div style="font-size:19px;font-weight:800">まとめて貼る</div>
+      <button class="chip" data-close="1">閉じる</button></div>
+    <p class="small" style="margin:10px 0 0">Xiaomiのスクショをこのチャットに送ってください。読み終わったら、貼るだけの形にしてお返しします。それをここに貼って取り込みます。</p>
+    <div class="divider"></div>
+    <label class="f" style="margin:0"><span>貼り付け欄</span>
+      <textarea id="x-bulk" placeholder="8/6 0:40-8:05 445,120,110,1,84
+8/7 0:52-7:50 418,95,120,2,79
+8/8 0:23-8:17 467,136,127,1,87" style="min-height:150px;font-family:var(--mono);font-size:14px"></textarea></label>
+    <p class="tiny" style="margin-top:8px">1行が1日分。「日付　就床-起床　総睡眠,深い,レム,覚醒,スコア」の形です。就床-起床が無い行も読めます。</p>
+    <button class="btn block" style="margin-top:14px" data-bulkparse="1">この内容で取り込む</button>
+  </div></div>`;
+}
+function parseBulkBand(text,year){
+  const lines=(text||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+  const out=[];
+  const y=year||new Date().getFullYear();
+  for(const L of lines){
+    const m=L.match(/^(\d{1,2})[\/月](\d{1,2})日?\s*(?:[（(]?[日月火水木金土][)）]?)?\s*(?:(\d{1,2}:\d{2})\s*[-–~〜]\s*(\d{1,2}:\d{2})\s*)?(\d{2,3}(?:\s*,\s*\d*){0,4})/);
+    if(!m) continue;
+    const M=Number(m[1]), D=Number(m[2]);
+    let date=y+"-"+pad(M)+"-"+pad(D);
+    if(date>today()) date=(y-1)+"-"+pad(M)+"-"+pad(D);
+    const v=m[5].split(",").map(x=>x.trim()===""?null:Number(x));
+    const rec={date, inBed:m[3]||null, wake:m[4]||null,
+      bandTotal:v[0]??null, deep:v[1]??null, rem:v[2]??null, awakenings:v[3]??null, bandScore:v[4]??null};
+    out.push(rec);
+  }
+  return out;
+}
+function bandSheet(date){
+  const r=S.records[date]||{};
+  const [rh,rm]=splitHM(r.rem), [lh,lm]=splitHM(r.light), [dh,dm]=splitHM(r.deep);
+  const f=(id,label,v,ph="")=>`<label class="f"><span>${label}</span><input id="${id}" type="number" inputmode="numeric" value="${v??""}" placeholder="${ph}"></label>`;
+  const pair=(id,label,h,m)=>`<div><span style="display:block;font-size:14.5px;font-weight:700;color:var(--ink2);margin:14px 0 7px">${label}</span>
+    <div class="row" style="gap:8px">
+      <input id="${id}-h" type="number" inputmode="numeric" value="${h}" placeholder="0" style="text-align:center">
+      <span class="small" style="white-space:nowrap">時間</span>
+      <input id="${id}-m" type="number" inputmode="numeric" value="${m}" placeholder="0" style="text-align:center">
+      <span class="small" style="white-space:nowrap">分</span>
+    </div></div>`;
+  el("sheet").innerHTML=`<div class="sheet"><div class="in">
+    <div class="row spread"><div style="font-size:19px;font-weight:800">${md(date)}のバンドの数値</div>
+      <button class="chip" data-close="1">閉じる</button></div>
+    <p class="tiny" style="margin:8px 0 0">Mi Fitnessの睡眠画面と<b>同じ順番</b>に並べています。上から見ながら打つだけです。分に直す計算は要りません。</p>
+    <div class="divider"></div>
+    <div class="grid2">
+      <label class="f" style="margin:0"><span>ベッドに入った</span><input id="x-bed" type="time" value="${r.inBed||""}"></label>
+      <label class="f" style="margin:0"><span>起床</span><input id="x-wake" type="time" value="${r.wake||""}"></label>
+    </div>
+    <div class="grid2">
+      ${f("x-lat","入眠までの時間（分）",r.latency,"6")}
+      ${f("x-awk","覚醒回数（回）",r.awakenings,"1")}
+    </div>
+    ${pair("x-rem","レム",rh,rm)}
+    ${pair("x-light","浅い",lh,lm)}
+    ${pair("x-deep","深い",dh,dm)}
+    ${f("x-score","睡眠スコア",r.bandScore,"87")}
+    <div class="card" style="margin:16px 0 0;background:#0E1526">
+      <div class="eyebrow">自動計算</div>
+      <div class="row spread"><span class="small">総睡眠時間（レム＋浅い＋深い）</span><b id="x-total" style="font-size:22px">—</b></div>
+      <div id="x-check" class="tiny" style="margin-top:6px"></div>
+    </div>
+    <button class="btn block" style="margin-top:16px" data-bandsave="${date}">この内容で保存</button>
+    <div class="divider"></div>
+    <div class="eyebrow">取り込みコードを貼る</div>
+    <p class="tiny" style="margin:0 0 8px">「467,136,127,1,87」の形（総睡眠・深い・レム・覚醒・スコア）。URLごと貼っても読めます。</p>
+    <input id="x-code" placeholder="467,136,127,1,87">
+    <button class="btn ghost block" style="margin-top:10px" data-codeparse="${date}">コードから取り込む</button>
+  </div></div>`;
+  bandTotalUpdate();
+}
+function bandTotalUpdate(){
+  if(!el("x-total")) return;
+  const g=id=>el(id)?el(id).value:"";
+  const total=hmPair(g("x-rem-h"),g("x-rem-m"))+hmPair(g("x-light-h"),g("x-light-m"))+hmPair(g("x-deep-h"),g("x-deep-m"));
+  el("x-total").textContent = total>0? dur(total) : "—";
+  const bed=g("x-bed"), wake=g("x-wake"), lat=Number(g("x-lat")||0);
+  let msg="";
+  if(bed&&wake&&total>0){
+    let a=night(bed), b=night(wake); if(b<a)b+=1440;
+    const inBedMin=b-a, diff=inBedMin-lat-total;
+    msg="ベッドの中 "+dur(inBedMin)+"／差 "+(diff>=0?"+":"")+Math.round(diff)+"分"+
+      (Math.abs(diff)<=10? "（つじつまが合っています）":"（差が大きいので入力を確認してください）");
+  }
+  el("x-check").textContent=msg;
+}
+function parseBand(t){
+  if(!t) return null;
+  const norm=t.replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/：/g,":");
+  const mins=(re)=>{ const m=norm.match(re); if(!m) return null;
+    const seg=norm.slice(m.index, m.index+40);
+    const hm=seg.match(/(\d{1,2})\s*(?:時間|h|:)\s*(\d{1,2})?/);
+    if(hm) return Number(hm[1])*60+Number(hm[2]||0);
+    const only=seg.match(/(\d{1,3})\s*(?:分|m)/); return only? Number(only[1]) : null; };
+  const num=(re)=>{ const m=norm.match(re); if(!m) return null;
+    const seg=norm.slice(m.index, m.index+30).match(/(\d{1,3})/); return seg? Number(seg[1]) : null; };
+  const o={};
+  o.bandTotal = mins(/(?:睡眠時間|合計睡眠|総睡眠|睡眠)/);
+  o.deep = mins(/(?:深い睡眠|深睡眠|深い)/);
+  o.rem  = mins(/(?:レム|REM)/);
+  o.light= mins(/(?:浅い睡眠|浅い)/);
+  o.awakenings = num(/(?:覚醒|目覚め|中途)/);
+  o.bandScore  = num(/(?:睡眠スコア|スコア)/);
+  const has=Object.keys(o).some(k=>o[k]!=null);
+  return has? o : null;
 }
 function scale(k,label,v){
   return `<label class="f"><span>${label}</span></label><div class="row" style="margin-top:6px">
@@ -931,7 +1088,7 @@ function renderShift(){
 }
 function editSheet(ds){
   const sh=S.shifts[ds]||{}, pl=S.plans[ds]||{};
-  el("sheet").innerHTML=`<div class="sheet" data-close="1"><div class="in" onclick="event.stopPropagation()">
+  el("sheet").innerHTML=`<div class="sheet"><div class="in">
     <div class="row spread"><div class="serif" style="font-size:18px">${md(ds)}（${dow(ds)}）</div>
       <button class="chip" data-close="1">閉じる</button></div>
     <div class="divider"></div>
@@ -1203,6 +1360,23 @@ function renderSet(){
     <p class="tiny" style="margin-top:8px">係数0.5は「寝だめでは完全に返せない」ことを反映した設計値で、厳密な根拠のある数値ではありません。</p>
   </div>
 
+  <div class="card">
+    <div class="eyebrow">Xiaomiの数値をアプリに渡す方法</div>
+    <p class="small" style="margin:0 0 10px"><b>いちばん確実：</b>Mi Fitness の睡眠画面を見ながら、記録タブの数値欄に打つか、画面の文字をコピーして「この文章から取り込む」に貼る。1日20秒ほどです。</p>
+    <p class="small" style="margin:0 0 10px"><b>自動化したいとき：</b>iPhoneのショートカットで、この形のURLを開くようにします。開くだけでその日の記録に入ります。</p>
+    <div style="background:#0E1526;border:2px solid var(--line);border-radius:12px;padding:12px;font-family:var(--mono);font-size:13px;word-break:break-all">?band=430,80,95,2,82&date=${today()}</div>
+    <p class="tiny" style="margin-top:8px">数字は順に「総睡眠時間・深い・レム・覚醒回数・スコア」（すべて分と回）。後ろのdateは省略できます（省略時は今日）。</p>
+    <div class="divider"></div>
+    <p class="small" style="margin:0 0 8px"><b>ショートカットの作り方</b></p>
+    <ol class="instr small">
+      <li>Mi Fitness の設定で Apple ヘルスケアとの同期をオンにする</li>
+      <li>ショートカットアプリで「ヘルスケアのサンプルを検索」→ 種類を睡眠にして、昨夜の分を取得</li>
+      <li>「テキスト」で上の形のURLを組み立てる</li>
+      <li>「URLを開く」を追加して、毎朝の自動化に設定する</li>
+    </ol>
+    <p class="tiny" style="margin-top:10px"><b>正直な注意：</b>ヘルスケアから取れるのは総睡眠時間までで、Xiaomiが書き込む内容によっては深い睡眠やレムは取れません。取れない項目は空にしておけば、アプリは総睡眠時間と朝の3問だけで分析します（もともと段階は参考値扱いなので、分析の精度は落ちません）。</p>
+  </div>
+
   <button class="btn block" data-ssave="1">設定を保存</button>
   <div class="divider"></div>
   <div class="card">
@@ -1220,7 +1394,9 @@ function renderSet(){
 
 /* ============ イベント ============ */
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-go],[data-ob],[data-goal],[data-c],[data-tick],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-hideinstall],[data-dl],[data-export],[data-import],[data-pl]");
+  // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
+  if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
+  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-tick],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-hideinstall],[data-dl],[data-export],[data-import],[data-pl]");
   if(!t) return;
   const D=t.dataset;
 
@@ -1230,6 +1406,14 @@ document.addEventListener("click",e=>{
   if(D.goal){ ob.tmp.goal=D.goal; renderOnboard(); return; }
   if(D.c){ const[i,j]=D.c.split(":").map(Number); ob.tmp.chrono=ob.tmp.chrono||{}; ob.tmp.chrono[i]=j; renderOnboard(); return; }
 
+  if(D.now){
+    const now=new Date(), hm=pad(now.getHours())+":"+pad(now.getMinutes());
+    if(D.now==="wake"){ const r=S.records[today()]||(S.records[today()]={}); r.wake=hm; }
+    else { const dd=now.getHours()>=15? addDays(today(),1) : today();
+           const r=S.records[dd]||(S.records[dd]={}); r.inBed=hm; }
+    save(); toast(hm+" を記録しました"); render(); return; }
+  if(D.aw!==undefined){ const r=S.records[today()]||(S.records[today()]={});
+    r.awakenings = r.awakenings===Number(D.aw)? null : Number(D.aw); save(); render(); return; }
   if(D.tick){ const d=addDays(today(),1); const r=S.records[d]||(S.records[d]={});
     r.ticks=r.ticks||{}; r.ticks[D.tick]=!r.ticks[D.tick]; save(); render(); return; }
   if(D.fix){
@@ -1239,12 +1423,51 @@ document.addEventListener("click",e=>{
     save(); toast("調整しました"); render(); return; }
 
   if(D.day){ logDate=addDays(logDate||today(),Number(D.day)); render(); return; }
-  if(D.sc){ const[k,v]=D.sc.split(":"); const d=logDate||today(); const r=S.records[d]||(S.records[d]={});
-    r[k]=r[k]===Number(v)?null:Number(v); save(); renderLog(); return; }
+  if(D.sc){ const[k,v]=D.sc.split(":"); const d=(cur==="home")?today():(logDate||today());
+    const r=S.records[d]||(S.records[d]={});
+    r[k]=r[k]===Number(v)?null:Number(v); save(); render(); return; }
   if(D.t){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r[D.t]=!r[D.t]; save(); renderLog(); return; }
   if(D.bath){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r.bathType=r.bathType===D.bath?null:D.bath; save(); renderLog(); return; }
   if(D.mw){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r.mealWeight=r.mealWeight===D.mw?null:D.mw; save(); renderLog(); return; }
   if(D.save){ saveLog(); return; }
+  if(D.bandsheet){ bandSheet(D.bandsheet); return; }
+  if(D.bulksheet){ bulkSheet(); return; }
+  if(D.bulkparse){
+    const list=parseBulkBand(el("x-bulk").value);
+    if(!list.length){ toast("読み取れる行がありませんでした"); return; }
+    list.forEach(x=>{
+      const r=S.records[x.date]||(S.records[x.date]={});
+      ["inBed","wake","bandTotal","deep","rem","awakenings","bandScore"].forEach(k=>{ if(x[k]!=null) r[k]=x[k]; });
+    });
+    refreshGame(); save(); el("sheet").innerHTML=""; toast(list.length+"日分を取り込みました"); render(); return; }
+  if(D.bandsave){
+    const d=D.bandsave, r=S.records[d]||(S.records[d]={});
+    const g=id=>el(id)?el(id).value:"";
+    const rem=hmPair(g("x-rem-h"),g("x-rem-m")), light=hmPair(g("x-light-h"),g("x-light-m")), deep=hmPair(g("x-deep-h"),g("x-deep-m"));
+    if(g("x-bed")) r.inBed=g("x-bed");
+    if(g("x-wake")) r.wake=g("x-wake");
+    if(g("x-lat")!=="") r.latency=Number(g("x-lat"));
+    if(g("x-awk")!=="") r.awakenings=Number(g("x-awk"));
+    if(rem) r.rem=rem; if(light) r.light=light; if(deep) r.deep=deep;
+    if(rem+light+deep>0) r.bandTotal=rem+light+deep;
+    if(g("x-score")!=="") r.bandScore=Number(g("x-score"));
+    if(r.bathEnd&&r.inBed){ let a=night(r.bathEnd),b=night(r.inBed); if(b<a)b+=1440; r.bathWait=b-a; }
+    refreshGame(); save(); el("sheet").innerHTML="";
+    toast("保存しました（総睡眠 "+dur(r.bandTotal||0)+"）"); render(); return; }
+  if(D.codeparse){
+    const raw=(el("x-code").value||"").trim();
+    const m=raw.match(/(\d+(?:\s*,\s*\d*){1,5})/);
+    if(!m){ toast("コードを読み取れませんでした"); return; }
+    const v=m[1].split(",").map(x=>x.trim()===""?null:Number(x));
+    const d=D.codeparse, r=S.records[d]||(S.records[d]={});
+    ["bandTotal","deep","rem","awakenings","bandScore"].forEach((k,i)=>{ if(v[i]!=null&&!isNaN(v[i])) r[k]=v[i]; });
+    save(); el("sheet").innerHTML=""; toast("取り込みました"); render(); return; }
+  if(D.bandparse){
+    const o=parseBand(el("f-bandpaste").value);
+    if(!o){ toast("数値を読み取れませんでした"); return; }
+    const d=logDate||today(); const r=S.records[d]||(S.records[d]={});
+    ["bandTotal","deep","rem","light","awakenings","bandScore"].forEach(k=>{ if(o[k]!=null) r[k]=o[k]; });
+    save(); toast("取り込みました（総睡眠 "+(o.bandTotal!=null?dur(o.bandTotal):"—")+"）"); renderLog(); return; }
 
   if(D.mon){ const b=logDate||today(); const dt=parseISO(b); dt.setMonth(dt.getMonth()+Number(D.mon),1); logDate=iso(dt); renderShift(); return; }
   if(D.edit){ editSheet(D.edit); return; }
@@ -1258,7 +1481,9 @@ document.addEventListener("click",e=>{
     if(v) S.overrides[d]={wake:v}; else delete S.overrides[d]; save(); toast(v?d+" の起床を "+v+" に":"解除しました"); return; }
 
   if(D.art!==undefined){ openArt=D.art||null; renderKnow(); window.scrollTo(0,0); return; }
-  if(D.read){ if(!S.read[D.read]){ S.read[D.read]=true; S.game.points+=10; refreshGame(); save(); toast("読了 +10pt"); } renderArticle(D.read); return; }
+  if(D.read){ if(!S.read[D.read]){ S.read[D.read]=true; S.game.points+=10; refreshGame(); save(); toast("読了 +10pt"); }
+    else toast("すでに読了しています");
+    openArt=null; renderKnow(); render(); window.scrollTo(0,0); return; }
 
   if(D.ssave){ saveSettings(); return; }
   if(D.dl){ const blob=new Blob([JSON.stringify(S,null,1)],{type:"application/json"});
@@ -1340,6 +1565,7 @@ function saveSettings(){
   save(); toast("設定を保存しました"); render();
 }
 
+document.addEventListener("input",e=>{ if(e.target&&/^x-/.test(e.target.id||"")) bandTotalUpdate(); });
 document.addEventListener("change",e=>{
   if(e.target && e.target.id==="s-file" && e.target.files && e.target.files[0]){
     const fr=new FileReader();
@@ -1349,10 +1575,25 @@ document.addEventListener("change",e=>{
   }
 });
 
+/* ============ URLからの取り込み（ショートカット連携） ============ */
+function importFromURL(){
+  const q=new URLSearchParams(location.search);
+  const b=q.get("band"); if(!b) return;
+  const d=q.get("date")||today();
+  const v=b.split(",").map(x=>x.trim()===""?null:Number(x));
+  const r=S.records[d]||(S.records[d]={});
+  const keys=["bandTotal","deep","rem","awakenings","bandScore"];
+  keys.forEach((k,i)=>{ if(v[i]!=null&&!isNaN(v[i])) r[k]=v[i]; });
+  save();
+  try{ history.replaceState(null,"",location.pathname); }catch(e){}
+  setTimeout(()=>toast(md(d)+" の数値を取り込みました"),400);
+}
+
 /* ============ 起動 ============ */
 if("serviceWorker" in navigator && location.protocol.startsWith("http")){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
+importFromURL();
 tabs(); render();
 </script>
 </body>
