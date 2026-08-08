@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101728">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,6 +22,7 @@
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
   --r:18px;
+  color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
@@ -84,11 +86,12 @@ nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(18
   padding:11px 16px;border-radius:99px;font-size:15.5px;font-weight:700;min-height:46px}
 .chip[aria-pressed="true"]{background:linear-gradient(180deg,var(--amber),var(--amber2));
   border-color:var(--amber);color:#231605;box-shadow:0 3px 0 #B96F22}
-label.f{display:block;margin:14px 0 0}
+label.f{display:block;margin:14px 0 0;min-width:0}
 label.f span{display:block;font-size:14.5px;font-weight:700;color:var(--ink2);margin-bottom:7px}
-input,select,textarea{width:100%;background:#0E1526;border:2px solid var(--line);border-radius:13px;padding:13px 14px}
+input,select,textarea{width:100%;min-width:0;background:#0E1526;border:2px solid var(--line);border-radius:13px;padding:13px 14px}
 textarea{min-height:80px;resize:vertical;font-weight:500}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:11px}
+.row>*{min-width:0}
 .divider{height:1px;background:var(--line);margin:17px 0}
 .badge{font-size:13px;font-weight:800;padding:5px 11px;border-radius:99px;
   border:2px solid var(--line);color:var(--ink2)}
