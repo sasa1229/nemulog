@@ -828,7 +828,8 @@ function renderHome(){
   }
   tl.push({t:unNight(p.bathPlan.bathStartN),b:"入浴（"+p.bathPlan.bath+"分）",e:p.bathPlan.label,id:"bath"});
   tl.push({t:unNight(p.bathPlan.bathEndN),b:"湯上がり → スキンケア・ドライヤー",e:S.settings.careMin+"分",id:"care"});
-  tl.push({t:unNight(p.bedN-30),b:"スマホを置く",e:"新しい情報を入れない",id:"phone"});
+  const phoneN=Math.max(p.bedN-30, p.bathPlan.bathEndN+S.settings.careMin);
+  tl.push({t:unNight(phoneN),b:"スマホを置く",e:"新しい情報を入れない",id:"phone"});
   tl.push({t:unNight(p.bedN),b:"就寝",e:"湯上がりから"+p.bathPlan.realWait+"分",key:true,id:"bed"});
   const tick=S.records[addDays(d,1)]?.ticks||{};
   const cafe=unNight(p.bedN-360), meal3=unNight(p.bedN-180);
@@ -1459,7 +1460,12 @@ function weekChart(ds,durs,need){
 
 /* ---- サウンド（Web Audio・音源ファイル不要） ---- */
 let AC=null, AU={playing:null,nodes:null,startedAt:null,timeoutId:null};
-function actx(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume(); return AC; }
+function actx(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+function resumeThen(cb){
+  const ctx=actx();
+  if(ctx.state==="running"){ cb(ctx); return; }
+  ctx.resume().then(()=>cb(ctx)).catch(()=>cb(ctx));
+}
 function soundTargetDate(){ return new Date().getHours()>=15 ? addDays(today(),1) : today(); }
 function stopSound(log){
   if(!AU.playing) return;
@@ -1485,15 +1491,17 @@ function scheduleAutoStop(){
 }
 function startMonaural(){
   stopSound(false);
-  const ctx=actx(), s=S.settings.sound;
-  const base = s.lowPitch? Math.min(s.base,110) : s.base;
-  const o1=ctx.createOscillator(), o2=ctx.createOscillator(), gain=ctx.createGain();
-  o1.frequency.value=base; o2.frequency.value=base+s.beat; gain.gain.value=0;
-  o1.connect(gain); o2.connect(gain); gain.connect(ctx.destination);
-  o1.start(); o2.start();
-  gain.gain.linearRampToValueAtTime(s.volume, ctx.currentTime+1.2);
-  AU={playing:"mono",nodes:{gain,sources:[o1,o2]},startedAt:Date.now(),timeoutId:null};
-  scheduleAutoStop();
+  resumeThen(ctx=>{
+    const s=S.settings.sound;
+    const base = s.lowPitch? Math.min(s.base,110) : s.base;
+    const o1=ctx.createOscillator(), o2=ctx.createOscillator(), gain=ctx.createGain();
+    o1.frequency.value=base; o2.frequency.value=base+s.beat; gain.gain.value=0;
+    o1.connect(gain); o2.connect(gain); gain.connect(ctx.destination);
+    o1.start(); o2.start();
+    gain.gain.linearRampToValueAtTime(s.volume, ctx.currentTime+0.6);
+    AU={playing:"mono",nodes:{gain,sources:[o1,o2]},startedAt:Date.now(),timeoutId:null};
+    scheduleAutoStop(); render();
+  });
 }
 function noiseBuffer(ctx){
   const len=ctx.sampleRate*2, buf=ctx.createBuffer(1,len,ctx.sampleRate), data=buf.getChannelData(0);
@@ -1502,30 +1510,34 @@ function noiseBuffer(ctx){
 }
 function startNoise(){
   stopSound(false);
-  const ctx=actx(), s=S.settings.sound;
-  const src=ctx.createBufferSource(); src.buffer=noiseBuffer(ctx); src.loop=true;
-  const filter=ctx.createBiquadFilter(); filter.type="lowpass"; filter.frequency.value=s.noiseType==="rain"?1800:6000;
-  const gain=ctx.createGain(); gain.gain.value=0;
-  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-  src.start();
-  gain.gain.linearRampToValueAtTime(s.volume, ctx.currentTime+1.2);
-  const sources=[src];
-  if(s.noiseType==="rain"){
-    const lfo=ctx.createOscillator(), lfoGain=ctx.createGain();
-    lfo.frequency.value=0.15; lfoGain.gain.value=s.volume*0.35;
-    lfo.connect(lfoGain); lfoGain.connect(gain.gain); lfo.start();
-    sources.push(lfo);
-  }
-  AU={playing:"noise",nodes:{gain,sources},startedAt:Date.now(),timeoutId:null};
-  scheduleAutoStop();
+  resumeThen(ctx=>{
+    const s=S.settings.sound;
+    const src=ctx.createBufferSource(); src.buffer=noiseBuffer(ctx); src.loop=true;
+    const filter=ctx.createBiquadFilter(); filter.type="lowpass"; filter.frequency.value=s.noiseType==="rain"?1800:6000;
+    const gain=ctx.createGain(); gain.gain.value=0;
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    src.start();
+    gain.gain.linearRampToValueAtTime(s.volume, ctx.currentTime+0.6);
+    const sources=[src];
+    if(s.noiseType==="rain"){
+      const lfo=ctx.createOscillator(), lfoGain=ctx.createGain();
+      lfo.frequency.value=0.15; lfoGain.gain.value=s.volume*0.35;
+      lfo.connect(lfoGain); lfoGain.connect(gain.gain); lfo.start();
+      sources.push(lfo);
+    }
+    AU={playing:"noise",nodes:{gain,sources},startedAt:Date.now(),timeoutId:null};
+    scheduleAutoStop(); render();
+  });
 }
 function playWakeMelody(){
-  const ctx=actx(); let t=ctx.currentTime;
-  [523.25,659.25,783.99,1046.5].forEach(f=>{
-    const o=ctx.createOscillator(), g=ctx.createGain();
-    o.frequency.value=f; o.type="sine";
-    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.2,t+0.05); g.gain.linearRampToValueAtTime(0,t+0.38);
-    o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.4); t+=0.3;
+  resumeThen(ctx=>{
+    let t=ctx.currentTime;
+    [523.25,659.25,783.99,1046.5].forEach(f=>{
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.frequency.value=f; o.type="sine";
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.25,t+0.05); g.gain.linearRampToValueAtTime(0,t+0.38);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.4); t+=0.3;
+    });
   });
 }
 /* ---- 自己実験モード ---- */
@@ -1581,6 +1593,11 @@ function renderSound(){
     <div class="eyebrow">正直な注意</div>
     <p class="small">モノラルビートの睡眠効果は、提供元のパイロット研究が主な根拠で、独立した大規模検証はまだありません。「効く」と決めつけず、使った夜と使わなかった夜のスッキリ度を比べて、自分に合うかを確かめてください。</p>
     <p class="tiny" style="margin-top:8px">音量は控えめにしてあります。再生は設定した時間で自動的に止まります。イヤホンを着けたまま眠るのはおすすめしません。</p>
+  </div>
+
+  <div class="card" style="border-color:var(--rose)">
+    <div class="eyebrow" style="color:var(--rose)">音が聞こえないとき</div>
+    <p class="small">iPhoneの場合、本体側面の<b>サイレントスイッチ（消音スイッチ）</b>がオンになっていると、Webページの音は鳴りません。オレンジ色が見えていたら消音中です。あわせて本体の音量ボタンとマナーモードの解除もご確認ください。</p>
   </div>
 
   <div class="card">
