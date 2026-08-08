@@ -923,30 +923,14 @@ function renderHome(){
     <div class="kv"><span>できれば食事は</span><b>${meal3} まで</b></div>
   </div>
 
-  <div class="card">
-    <div class="eyebrow">睡眠負債（直近${S.settings.debtWindow}日）</div>
-    <div class="row spread" style="align-items:flex-end">
-      <div class="big" style="${db.min<=0?"color:var(--lime)":""}">${db.min<=0?"なし":dur(db.min)}</div>
-      <div class="tiny" style="text-align:right">必要睡眠<br>${dur(db.need)} 基準</div>
-    </div>
-    <div class="meter" style="margin-top:10px"><i style="width:${Math.min(100,db.min/(db.need*0.7)*100)}%"></i></div>
-    <p class="small mut" style="margin:10px 0 0">${db.min<=0?"いまは負債なし。この形を保つのが目標です。"
-      :"1日あたり "+Math.min(60,Math.ceil(db.min/21))+"分 を3週間で返せます（就寝を"+Math.min(60,Math.ceil(db.min/21))+"分前倒し）。一度に返すことはできません。"}</p>
+  <div class="row wrap" style="justify-content:center;margin:2px 0 15px">
+    <span class="streak">連続 <b>${S.game.streak}</b> 日</span>
+    <span class="streak">負債 <b>${db.min<=0?"なし":dur(db.min)}</b></span>
+    ${pr?`<span class="streak">昨夜 <b>${pr.ok===null?"免除日":(pr.ok?"達成":"未達")}</b></span>`:""}
   </div>
 
-  <div class="card">
-    <div class="eyebrow">約束とスタンプ</div>
-    <div class="stamps">${[...Array(7)].map((_,i)=>`<i class="${i<S.game.stamps?"on":""}">${i<S.game.stamps?"✓":i+1}</i>`).join("")}</div>
-    <div class="row wrap" style="margin-top:14px">
-      <span class="streak">連続 <b>${S.game.streak}</b> 日</span>
-      <span class="streak">カード <b>${S.game.cards}</b> 枚</span>
-      <span class="streak">保険 <b>${S.game.insurance}</b> 回</span>
-    </div>
-    ${pr?`<p class="small" style="margin:6px 0 0">昨夜：${pr.ok===null?"免除日":(pr.ok?"<span class='badge ok'>達成</span>":"<span class='badge'>未達</span>")} <span class="mut">${h(pr.why)}</span></p>`:""}
-    <p class="tiny" style="margin-top:8px">スコアと達成は翌朝に表示します。寝る前に点数を気にすると寝つきが悪くなるためです。</p>
-  </div>
-
-  <button class="btn ghost block" data-go="log">記録を開く（バンドの数値・夜の行動）</button>`;
+  <button class="btn ghost block" data-go="log">記録を開く（バンドの数値・夜の行動）</button>
+  <button class="btn ghost block" style="margin-top:10px" data-go="analyze">分析を見る（負債・スタンプ・バッジ）</button>`;
 }
 
 /* ---- 記録 ---- */
@@ -977,7 +961,7 @@ function renderLog(){
     <div class="eyebrow">必須・朝の 3 問</div>
     ${scale("refreshed","スッキリ度（1 だるい ← → 5 快調）",r.refreshed)}
     ${scale("ease","寝つきの良さ（1 悪い ← → 5 良い）",r.ease)}
-    <label class="f"><span>夜中に目が覚めた回数</span><input id="f-awake" type="number" min="0" max="10" value="${r.awakenings??""}" placeholder="0"></label>
+    <label class="f"><span>夜中に目が覚めた回数</span>${numSel("f-awake",r.awakenings,0,10,1,"回",true)}</label>
   </div>
 
   <div class="card">
@@ -986,7 +970,7 @@ function renderLog(){
       <label class="f"><span>布団に入った時刻</span><input id="f-inBed" type="time" value="${r.inBed||""}"></label>
       <label class="f"><span>起きた時刻</span><input id="f-wake" type="time" value="${r.wake||""}"></label>
     </div>
-    <label class="f"><span>寝つくまでにかかった体感（分）</span><input id="f-lat" type="number" min="0" max="180" value="${r.latency??""}" placeholder="${S.settings.latencyMin}"></label>
+    <label class="f"><span>寝つくまでにかかった体感（分）</span>${numSel("f-lat",r.latency,0,120,5,"分",true)}</label>
     <div class="row wrap" style="margin-top:12px">
       <button class="chip" data-t="alarmUsed" aria-pressed="${!!r.alarmUsed}">アラームで起きた</button>
       <button class="chip" data-t="isFreeDay" aria-pressed="${!!r.isFreeDay}">自由に寝られた日</button>
@@ -1002,12 +986,12 @@ function renderLog(){
     <button class="btn dawn block" style="margin-bottom:10px" data-bandsheet="${d}">Xiaomiの画面の順に入力する</button>
     <button class="btn ghost block" data-bulksheet="1">写真を送った分をまとめて貼る</button>
     <p class="tiny" style="margin-top:8px">Xiaomiのスクショをこのチャットに送ると、貼るだけで済むブロックにして返します。</p>
-    <label class="f"><span>総睡眠時間（分）</span><input id="f-band" type="number" min="0" max="900" value="${r.bandTotal??""}" placeholder="例 430"></label>
+    <label class="f"><span>総睡眠時間（分）</span>${numSel("f-band",r.bandTotal,240,600,5,"分",true)}</label>
     <div class="grid2">
-      <label class="f"><span>深い（分）</span><input id="f-deep" type="number" value="${r.deep??""}"></label>
-      <label class="f"><span>レム（分）</span><input id="f-rem" type="number" value="${r.rem??""}"></label>
+      <label class="f"><span>深い（分）</span>${numSel("f-deep",r.deep,0,240,5,"分",true)}</label>
+      <label class="f"><span>レム（分）</span>${numSel("f-rem",r.rem,0,240,5,"分",true)}</label>
     </div>
-    <label class="f"><span>睡眠スコア（バンド）</span><input id="f-bs" type="number" value="${r.bandScore??""}"></label>
+    <label class="f"><span>睡眠スコア（バンド）</span>${numSel("f-bs",r.bandScore,0,100,1,"点",true)}</label>
     <p class="tiny" style="margin-top:8px">深い睡眠とレムは<b>参考値</b>です。機器推定なので絶対値は当てになりません。スコアや負債の計算には使いません。自分の平常値との差だけ見てください。</p>
     <div class="divider"></div>
     <label class="f"><span>Mi Fitness の数値を貼り付けて取り込む</span>
@@ -1036,7 +1020,7 @@ function renderLog(){
     </div>
     <div class="grid2">
       <label class="f"><span>最後のカフェイン</span><input id="f-caf" type="time" value="${r.caffeineTime||""}"></label>
-      <label class="f"><span>昼寝（分）</span><input id="f-nap" type="number" value="${r.napMin??""}"></label>
+      <label class="f"><span>昼寝（分）</span>${numSel("f-nap",r.napMin,0,120,5,"分",true)}</label>
     </div>
     <div class="row wrap" style="margin-top:12px">
       <button class="chip" data-t="soundUsed" aria-pressed="${!!r.soundUsed}">入眠サウンドを使った</button>
@@ -1092,13 +1076,11 @@ function parseBulkBand(text,year){
 function bandSheet(date){
   const r=S.records[date]||{};
   const [rh,rm]=splitHM(r.rem), [lh,lm]=splitHM(r.light), [dh,dm]=splitHM(r.deep);
-  const f=(id,label,v,ph="")=>`<label class="f"><span>${label}</span><input id="${id}" type="number" inputmode="numeric" value="${v??""}" placeholder="${ph}"></label>`;
+  const f=(id,label,v,min,max,step,unit)=>`<label class="f"><span>${label}</span>${numSel(id,v,min,max,step,unit,true)}</label>`;
   const pair=(id,label,h,m)=>`<div><span style="display:block;font-size:14.5px;font-weight:700;color:var(--ink2);margin:14px 0 7px">${label}</span>
     <div class="row" style="gap:8px">
-      <input id="${id}-h" type="number" inputmode="numeric" value="${h}" placeholder="0" style="text-align:center">
-      <span class="small" style="white-space:nowrap">時間</span>
-      <input id="${id}-m" type="number" inputmode="numeric" value="${m}" placeholder="0" style="text-align:center">
-      <span class="small" style="white-space:nowrap">分</span>
+      ${numSel(id+"-h",h,0,6,1,"時間",true)}
+      ${numSel(id+"-m",m,0,55,5,"分",true)}
     </div></div>`;
   el("sheet").innerHTML=`<div class="sheet"><div class="in">
     <div class="row spread"><div style="font-size:19px;font-weight:800">${md(date)}のバンドの数値</div>
@@ -1110,13 +1092,13 @@ function bandSheet(date){
       <label class="f" style="margin:0"><span>起床</span><input id="x-wake" type="time" value="${r.wake||""}"></label>
     </div>
     <div class="grid2">
-      ${f("x-lat","入眠までの時間（分）",r.latency,"6")}
-      ${f("x-awk","覚醒回数（回）",r.awakenings,"1")}
+      ${f("x-lat","入眠までの時間（分）",r.latency,0,60,1,"分")}
+      ${f("x-awk","覚醒回数（回）",r.awakenings,0,10,1,"回")}
     </div>
     ${pair("x-rem","レム",rh,rm)}
     ${pair("x-light","浅い",lh,lm)}
     ${pair("x-deep","深い",dh,dm)}
-    ${f("x-score","睡眠スコア",r.bandScore,"87")}
+    ${f("x-score","睡眠スコア",r.bandScore,0,100,1,"点")}
     <div class="card" style="margin:16px 0 0;background:#0E1526">
       <div class="eyebrow">自動計算</div>
       <div class="row spread"><span class="small">総睡眠時間（レム＋浅い＋深い）</span><b id="x-total" style="font-size:22px">—</b></div>
@@ -1170,6 +1152,29 @@ function scale(k,label,v){
   return `<label class="f"><span>${label}</span></label><div class="row" style="margin-top:6px">
     ${[1,2,3,4,5].map(n=>`<button class="chip" data-sc="${k}:${n}" aria-pressed="${v===n}" style="flex:1">${n}</button>`).join("")}</div>`;
 }
+// 数字入力の代わりに使うプルダウン。既存値がステップの目盛りからずれていても消えないよう、その値を選択肢に足す
+// id には "id:foo" の代わりに任意のHTML属性文字列（例 'data-pl="x:y"'）も渡せる
+function numSel(id,value,min,max,step,unit,allowEmpty){
+  const attr = id? (id.includes("=")? id : `id="${id}"`) : "";
+  unit=unit||""; const dec=step<1?1:0;
+  const cur=(value!=null&&value!=="")?Number(value):null;
+  const n=Math.round((max-min)/step);
+  const vals=[]; let injected=(cur==null);
+  for(let i=0;i<=n;i++){
+    const v=Math.round((min+i*step)*10)/10;
+    if(!injected&&cur<v-1e-6){ vals.push(cur); injected=true; }
+    vals.push(v);
+  }
+  if(!injected) vals.push(cur);
+  const seen=new Set();
+  let html=allowEmpty?`<option value="">未入力</option>`:"";
+  vals.forEach(v=>{
+    const vs=dec?v.toFixed(1):String(Math.round(v));
+    if(seen.has(vs)) return; seen.add(vs);
+    html+=`<option value="${vs}" ${cur!=null&&Math.abs(cur-v)<1e-6?"selected":""}>${vs}${unit}</option>`;
+  });
+  return `<select ${attr}>${html}</select>`;
+}
 
 /* ---- 予定・シフト ---- */
 function renderShift(){
@@ -1209,7 +1214,7 @@ function renderShift(){
 - やきとり
 08/09（日）16:00 - 21:00
 - エブリー" style="min-height:130px;font-family:var(--mono);font-size:13px"></textarea>
-    <label class="f"><span>年</span><input id="f-year" type="number" value="${y}"></label>
+    <label class="f"><span>年</span>${numSel("f-year",y,new Date().getFullYear()-1,new Date().getFullYear()+2,1,"年",false)}</label>
     <button class="btn block dawn" style="margin-top:12px" data-parse="1">読み込む</button>
     <p class="tiny" style="margin-top:8px">貼り付けた最初と最後の日付を取り込み期間とみなし、その間で行のない日は「バイトなし」として確定します。</p>
   </div>
@@ -1246,7 +1251,7 @@ function editSheet(ds){
     <label class="f"><span>内容</span><input id="e-title" value="${h(pl.title||"")}" placeholder="用事・遊び・旅行"></label>
     <div class="grid2">
       <label class="f"><span>開始時刻</span><input id="e-pst" type="time" value="${pl.startTime||""}"></label>
-      <label class="f"><span>移動（分）</span><input id="e-ptr" type="number" value="${pl.travelMin??""}" placeholder="20"></label>
+      <label class="f"><span>移動（分）</span>${numSel("e-ptr",pl.travelMin,0,90,5,"分",true)}</label>
     </div>
     <button class="btn block" style="margin-top:16px" data-esave="${ds}">保存</button>
     <button class="btn ghost block" style="margin-top:8px" data-edel="${ds}">この日の予定を消す</button>
@@ -1358,6 +1363,18 @@ function renderAnalyze(){
     <div class="eyebrow">行動と翌朝のスッキリ度</div>
     ${corrTable()}
     <p class="tiny" style="margin-top:10px">各群5日未満は数字を出しません。これは相関で、因果ではありません。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">約束とスタンプ</div>
+    <div class="stamps">${[...Array(7)].map((_,i)=>`<i class="${i<S.game.stamps?"on":""}">${i<S.game.stamps?"✓":i+1}</i>`).join("")}</div>
+    <div class="row wrap" style="margin-top:14px">
+      <span class="streak">連続 <b>${S.game.streak}</b> 日</span>
+      <span class="streak">カード <b>${S.game.cards}</b> 枚</span>
+      <span class="streak">保険 <b>${S.game.insurance}</b> 回</span>
+    </div>
+    ${(()=>{ const pr=promiseResult(addDays(today(),-1));
+      return pr?`<p class="small" style="margin:10px 0 0">昨夜：${pr.ok===null?"免除日":(pr.ok?"<span class='badge ok'>達成</span>":"<span class='badge'>未達</span>")} <span class="mut">${h(pr.why)}</span></p>`:""; })()}
   </div>
 
   <div class="card">
@@ -1531,13 +1548,15 @@ function startNoise(){
 }
 function playWakeMelody(){
   resumeThen(ctx=>{
-    let t=ctx.currentTime;
-    [523.25,659.25,783.99,1046.5].forEach(f=>{
+    // 出力パイプラインが温まるよう、少し先の時刻から鳴らし始める
+    let t=ctx.currentTime+0.15;
+    [523.25,659.25,783.99,1046.5,1318.5].forEach(f=>{
       const o=ctx.createOscillator(), g=ctx.createGain();
       o.frequency.value=f; o.type="sine";
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.25,t+0.05); g.gain.linearRampToValueAtTime(0,t+0.38);
-      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.4); t+=0.3;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.34,t+0.04); g.gain.linearRampToValueAtTime(0,t+0.42);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t+0.45); t+=0.32;
     });
+    toast("🔊 再生しました（聞こえない場合はサイレントスイッチを確認）");
   });
 }
 /* ---- 自己実験モード ---- */
@@ -1725,7 +1744,7 @@ function renderSet(){
     <label class="f"><span>判定に使う基準</span><select id="s-lb">
       <option value="home" ${s.lateBasis==="home"?"selected":""}>帰宅時刻</option>
       <option value="end" ${s.lateBasis==="end"?"selected":""}>終業時刻</option></select></label>
-    <label class="f"><span>遅番日の達成条件：帰宅から◯分以内に就寝</span><input id="s-lg" type="number" value="${s.lateGraceMin}"></label>
+    <label class="f"><span>遅番日の達成条件：帰宅から◯分以内に就寝</span>${numSel("s-lg",s.lateGraceMin,30,180,5,"分",false)}</label>
     <label class="f"><span>遅番日の扱い</span><select id="s-lh">
       <option value="lateMode" ${s.lateHandling==="lateMode"?"selected":""}>遅番モード（別基準で評価）</option>
       <option value="exempt" ${s.lateHandling==="exempt"?"selected":""}>完全に免除する</option></select></label>
@@ -1735,14 +1754,14 @@ function renderSet(){
   <div class="card">
     <div class="eyebrow">時間の実測値</div>
     <div class="grid2">
-      <label class="f"><span>入浴（分）</span><input id="s-bath" type="number" value="${s.bathMin}"></label>
-      <label class="f"><span>湯上がりのケア（分）</span><input id="s-care" type="number" value="${s.careMin}"></label>
+      <label class="f"><span>入浴（分）</span>${numSel("s-bath",s.bathMin,5,45,5,"分",false)}</label>
+      <label class="f"><span>湯上がりのケア（分）</span>${numSel("s-care",s.careMin,5,45,5,"分",false)}</label>
     </div>
     <div class="grid2">
-      <label class="f"><span>寝つきにかかる（分）</span><input id="s-lat" type="number" value="${s.latencyMin}"></label>
-      <label class="f"><span>支度（分）</span><input id="s-prep" type="number" value="${s.prepMin}"></label>
+      <label class="f"><span>寝つきにかかる（分）</span>${numSel("s-lat",s.latencyMin,0,60,5,"分",false)}</label>
+      <label class="f"><span>支度（分）</span>${numSel("s-prep",s.prepMin,20,120,5,"分",false)}</label>
     </div>
-    <label class="f"><span>通常日の達成幅（目標±分）</span><input id="s-nw" type="number" value="${s.normalWindowMin}"></label>
+    <label class="f"><span>通常日の達成幅（目標±分）</span>${numSel("s-nw",s.normalWindowMin,5,60,5,"分",false)}</label>
   </div>
 
   <div class="card">
@@ -1755,7 +1774,7 @@ function renderSet(){
       <label class="f"><span>学校日の起床</span><input id="s-sw" type="time" value="${s.schoolWake}"></label>
       <label class="f"><span>休み中の起床上限</span><input id="s-cap" type="time" value="${s.vacationWakeCap}"></label>
     </div>
-    <label class="f"><span>必要睡眠時間を手動で指定（分・空欄で自動）</span><input id="s-need" type="number" value="${s.needMin??""}" placeholder="${estimateNeed().value}"></label>
+    <label class="f"><span>必要睡眠時間を手動で指定（分・空欄で自動 ${estimateNeed().value}分）</span>${numSel("s-need",s.needMin,300,600,5,"分",true)}</label>
   </div>
 
   <div class="card">
@@ -1764,12 +1783,12 @@ function renderSet(){
       <div class="divider"></div>
       <div class="serif" style="font-size:15px">${h(k)}</div>
       <div class="grid2">
-        <label class="f"><span>移動（分）</span><input data-pl="${h(k)}:commuteMin" type="number" value="${p.commuteMin??""}"></label>
-        <label class="f"><span>退勤後（分）</span><input data-pl="${h(k)}:afterMin" type="number" value="${p.afterMin??0}"></label>
+        <label class="f"><span>移動（分）</span>${numSel(`data-pl="${h(k)}:commuteMin"`,p.commuteMin,0,90,5,"分",true)}</label>
+        <label class="f"><span>退勤後（分）</span>${numSel(`data-pl="${h(k)}:afterMin"`,p.afterMin,0,120,5,"分",true)}</label>
       </div>
       <div class="grid2">
         <label class="f"><span>退勤後の内容</span><input data-pl="${h(k)}:afterLabel" value="${h(p.afterLabel||"")}"></label>
-        <label class="f"><span>食事（分）</span><input data-pl="${h(k)}:mealMin" type="number" value="${p.mealMin??15}"></label>
+        <label class="f"><span>食事（分）</span>${numSel(`data-pl="${h(k)}:mealMin"`,p.mealMin??15,0,60,5,"分",false)}</label>
       </div>
       ${p.fixedArrival!==undefined?`<label class="f"><span>終電での帰宅時刻</span><input data-pl="${h(k)}:fixedArrival" type="time" value="${p.fixedArrival}"></label>`:""}
     `).join("")}
@@ -1778,8 +1797,8 @@ function renderSet(){
   <div class="card">
     <div class="eyebrow">負債の計算</div>
     <div class="grid2">
-      <label class="f"><span>集計する日数</span><input id="s-dw" type="number" value="${s.debtWindow}"></label>
-      <label class="f"><span>寝すぎ分の返済係数</span><input id="s-sw2" type="number" step="0.1" min="0" max="1" value="${s.surplusWeight}"></label>
+      <label class="f"><span>集計する日数</span>${numSel("s-dw",s.debtWindow,7,30,1,"日",false)}</label>
+      <label class="f"><span>寝すぎ分の返済係数</span>${numSel("s-sw2",s.surplusWeight,0,1,0.1,"",false)}</label>
     </div>
     <p class="tiny" style="margin-top:8px">係数0.5は「寝だめでは完全に返せない」ことを反映した設計値で、厳密な根拠のある数値ではありません。</p>
   </div>
@@ -2009,7 +2028,7 @@ function saveSettings(){
   s.nightMode=el("s-night").value;
   document.querySelectorAll("[data-pl]").forEach(inp=>{
     const[k,f]=inp.dataset.pl.split(":"); if(!s.places[k])return;
-    s.places[k][f]= inp.type==="number"? (Number(inp.value)||0) : inp.value;
+    s.places[k][f]= (f==="afterLabel"||f==="fixedArrival")? inp.value : (Number(inp.value)||0);
   });
   save(); toast("設定を保存しました"); render();
 }
