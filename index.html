@@ -191,15 +191,18 @@ article.read .src{font-size:13.5px;color:var(--ink3);margin-top:20px;border-top:
 article.read .src div{margin-bottom:5px;word-break:break-all}
 
 /* ---- misc ---- */
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.cal .h{font-size:12.5px;font-weight:800;color:var(--ink3);text-align:center}
-.cal .d{border:2px solid var(--line);border-radius:12px;min-height:62px;padding:5px;font-size:11.5px;
-  background:#0E1526;text-align:left;font-weight:600}
-.cal .d b{font-size:14px;font-weight:800;display:block;color:var(--ink)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .h{font-size:11px;font-weight:800;color:var(--ink3);text-align:center}
+.cal .d{border:2px solid var(--line);border-radius:10px;min-height:48px;min-width:0;padding:4px 2px;font-size:10px;
+  background:#0E1526;text-align:center;font-weight:600;overflow:hidden}
+.cal .d b{font-size:13px;font-weight:800;display:block;color:var(--ink)}
 .cal .d.late{border-color:var(--amber);background:rgba(255,193,94,.14)}
 .cal .d.work{border-color:var(--dawn);background:rgba(121,180,240,.1)}
 .cal .d.empty{border:none;background:none;min-height:0}
-.cal .d em{font-style:normal;display:block;color:var(--ink2);font-size:11px}
+.cal .d em{font-style:normal;display:block;color:var(--ink2);font-size:9.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.cal-legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.cal-legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink3);font-weight:700}
+.cal-legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:104px;
   background:linear-gradient(180deg,var(--amber),var(--amber2));color:#231605;font-weight:800;
   padding:14px 20px;border-radius:99px;font-size:15.5px;z-index:60;box-shadow:0 8px 26px rgba(0,0,0,.55)}
@@ -219,6 +222,12 @@ ul.plain{padding-left:20px;margin:10px 0}ul.plain li{margin-bottom:8px}
 .rankgrade{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;
   font-size:32px;font-weight:800;background:linear-gradient(180deg,var(--amber),var(--amber2));color:#231605;
   box-shadow:0 4px 0 #B96F22;flex-shrink:0}
+.qlinks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 15px}
+.qlinks button{background:linear-gradient(180deg,var(--panel),#19243F);border:2px solid var(--line);
+  border-radius:16px;padding:14px 4px;display:flex;flex-direction:column;align-items:center;gap:7px;
+  font-size:13px;font-weight:700;color:var(--ink2);min-height:72px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.qlinks button .g{font-size:24px}
+.qlinks button:active{transform:translateY(3px);box-shadow:none}
 .warnbar{background:var(--rose);color:#2B0D08;font-weight:800;padding:12px 16px;font-size:15px;
   border-radius:14px;margin-bottom:14px}
 .instr{counter-reset:st;list-style:none;padding:0;margin:12px 0 0}
@@ -870,6 +879,12 @@ function renderHome(){
     </div>
   </div>
 
+  <div class="qlinks">
+    <button data-go="shift"><span class="g">▤</span>予定・シフト</button>
+    <button data-go="sound"><span class="g">♪</span>音を聞く</button>
+    <button data-go="know"><span class="g">▮</span>知識を読む</button>
+  </div>
+
   ${p.shortfall>0?`<div class="card" style="border-color:#5C332C">
     <div class="eyebrow" style="color:var(--alert)">今夜は ${dur(p.shortfall)} 足りません</div>
     <p class="small">帰宅が${p.ha.hm}なので、${p.wakeTarget.hm}起床だと物理的に${dur(p.need-p.shortfall>0?p.need-p.shortfall:0)}前後にしかなりません。今夜どうにかするのではなく、こう埋めます。</p>
@@ -930,12 +945,7 @@ function renderHome(){
     <p class="tiny" style="margin-top:8px">スコアと達成は翌朝に表示します。寝る前に点数を気にすると寝つきが悪くなるためです。</p>
   </div>
 
-  <button class="btn ghost block" data-go="log">記録を開く（バンドの数値・夜の行動）</button>
-  <div class="row wrap" style="margin-top:12px;justify-content:center">
-    <button class="chip" data-go="shift">▤ 予定・シフト</button>
-    <button class="chip" data-go="sound">♪ 音を聞く</button>
-    <button class="chip" data-go="know">▮ 知識を読む</button>
-  </div>`;
+  <button class="btn ghost block" data-go="log">記録を開く（バンドの数値・夜の行動）</button>`;
 }
 
 /* ---- 記録 ---- */
@@ -951,6 +961,16 @@ function renderLog(){
       <span class="small mut">${d}</span>
       <button class="chip" data-day="1">次の日 →</button></div>
   </div>
+
+  ${sc?`<div class="card">
+    <div class="eyebrow">この日のスコア</div>
+    <div class="row spread" style="align-items:flex-end"><div class="big">${sc.total}<small style="font-size:15px" class="mut">/100</small></div>
+    <div class="tiny">睡眠時間 ${dur(sleepMin(S.records[d])||0)}・確度 ${conf(S.records[d])}</div></div>
+    <div class="stat" style="margin-top:12px">
+      <div><b>${sc.dur}</b><span>時間 /40</span></div>
+      <div><b>${sc.reg}</b><span>規則性 /30</span></div>
+      <div><b>${sc.ref}</b><span>休養感 /30</span></div></div>
+  </div>`:""}
 
   <div class="card">
     <div class="eyebrow">必須・朝の 3 問</div>
@@ -1033,17 +1053,7 @@ function renderLog(){
     ${scale("mood","気分（1 悪い ← → 5 良い）",r.mood)}
   </div>`}
 
-  <button class="btn block" style="margin-top:14px" data-save="1">保存する</button>
-
-  ${sc?`<div class="card" style="margin-top:14px">
-    <div class="eyebrow">この日のスコア</div>
-    <div class="row spread" style="align-items:flex-end"><div class="big">${sc.total}<small style="font-size:15px" class="mut">/100</small></div>
-    <div class="tiny">睡眠時間 ${dur(sleepMin(S.records[d])||0)}・確度 ${conf(S.records[d])}</div></div>
-    <div class="stat" style="margin-top:12px">
-      <div><b>${sc.dur}</b><span>時間 /40</span></div>
-      <div><b>${sc.reg}</b><span>規則性 /30</span></div>
-      <div><b>${sc.ref}</b><span>休養感 /30</span></div></div>
-  </div>`:""}`;
+  <button class="btn block" style="margin-top:14px" data-save="1">保存する</button>`;
 }
 function hmPair(h,m){ const H=Number(h||0), M=Number(m||0); return (isNaN(H)?0:H)*60+(isNaN(M)?0:M); }
 function splitHM(min){ if(min==null||isNaN(min)) return ["",""]; return [Math.floor(min/60), min%60]; }
@@ -1171,8 +1181,8 @@ function renderShift(){
     const ds=y+"-"+pad(m)+"-"+pad(day), sh=S.shifts[ds], pl=S.plans[ds];
     let cls="d"; if(sh){ cls+=" work"; const p=plan(ds); if(p.isLate) cls+=" late"; }
     cells+=`<button class="${cls}" data-edit="${ds}"><b>${day}</b>
-      ${sh?`<em>${h(sh.place.slice(0,3))}</em><em>${h(sh.start)}–${h(sh.actualEnd||sh.end)}</em>`:""}
-      ${pl?`<em>◇${h((pl.title||"予定").slice(0,4))}</em>`:""}</button>`;
+      ${sh?`<em>${h(sh.place.slice(0,2))}</em>`:""}
+      ${pl?`<em>◇${h((pl.title||"予定").slice(0,2))}</em>`:""}</button>`;
   }
   const lateN=Object.keys(S.shifts).filter(d=>d.startsWith(y+"-"+pad(m))&&plan(d).isLate).length;
   const workN=Object.keys(S.shifts).filter(d=>d.startsWith(y+"-"+pad(m))).length;
@@ -1185,7 +1195,11 @@ function renderShift(){
     <div class="cal" style="margin-top:12px">
       ${"日月火水木金土".split("").map(x=>`<div class="h">${x}</div>`).join("")}${cells}
     </div>
-    <p class="tiny" style="margin-top:10px">枠をタップして編集。琥珀色は遅番日です。</p>
+    <div class="cal-legend">
+      <span><i style="background:rgba(121,180,240,.35);border:2px solid var(--dawn)"></i>通常勤務</span>
+      <span><i style="background:rgba(255,193,94,.35);border:2px solid var(--amber)"></i>遅番</span>
+    </div>
+    <p class="tiny" style="margin-top:10px">枠をタップすると、勤務先・時間の詳しい編集ができます。</p>
   </div>
 
   <div class="card">
@@ -1795,6 +1809,13 @@ function renderSet(){
 }
 
 /* ============ イベント ============ */
+// 入力欄をタップしたとき、キーボードや下タブに隠れないよう軽くスクロールする
+document.addEventListener("focusin",e=>{
+  const t=e.target;
+  if(t&&t.matches&&t.matches("input,select,textarea")){
+    setTimeout(()=>{ try{ t.scrollIntoView({block:"center",behavior:"smooth"}); }catch(err){} },250);
+  }
+});
 document.addEventListener("click",e=>{
   // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
   if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
