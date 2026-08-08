@@ -8,7 +8,7 @@
 
 ## 公開URL
 
-https://kyoumonemui.github.io/nemulog/
+https://sasa1229.github.io/nemulog/
 
 ## 構成ファイル
 
