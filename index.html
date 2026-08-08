@@ -15,10 +15,10 @@
 <title>ねむログ — 夜の帳簿</title>
 <style>
 :root{
-  --bg:#101728; --bg2:#16203A; --panel:#1C2848; --panel2:#243156; --line:#374775;
-  --ink:#F5F3ED; --ink2:#BEC9E2; --ink3:#8D9ABA;
-  --amber:#FFC15E; --amber2:#FF9F45; --teal:#4FD1C5; --violet:#A48BFF;
-  --rose:#FF7E6E; --lime:#8FE39A; --dawn:#79B4F0;
+  --bg:#14131A; --bg2:#1A1822; --panel:#211F2B; --panel2:#2A2735; --line:#413C4D;
+  --ink:#E9E3D7; --ink2:#BBB2A3; --ink3:#948B7C;
+  --amber:#F0B368; --amber2:#DE8F4B; --teal:#5FC6B6; --violet:#A794DD;
+  --rose:#E88B78; --lime:#98D69E; --dawn:#8DA6C6;
   --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
   --r:18px;
@@ -31,7 +31,10 @@ body{
   font-family:var(--sans); font-size:17px; line-height:1.75; font-weight:500;
   letter-spacing:.005em; -webkit-text-size-adjust:100%;
   padding-bottom:96px; overscroll-behavior-y:none;
+  transition:filter .6s ease;
 }
+/* 深夜（23:00〜5:00）は自動でさらに落ち着いた色合いにする。設定でON/OFF可 */
+body.dim{ filter:brightness(.86) saturate(.8) sepia(.06); }
 h1,h2,h3,h4{font-weight:800;letter-spacing:.01em;line-height:1.4;margin:0}
 .serif{font-weight:800}
 button,input,select,textarea{font-family:inherit;font-size:17px;color:inherit;font-weight:600}
@@ -268,7 +271,8 @@ const DEFAULTS={
       "やきとり":{commuteMin:30, afterMin:0, afterLabel:"", mealMin:10, mealWeight:"軽め",
                   lastTrain:"23:48", rideMin:25, stationHomeMin:5, fixedArrival:"00:18"}
     },
-    reminders:{bath:true, caffeine:true}
+    reminders:{bath:true, caffeine:true},
+    nightMode:"auto"                // auto(23-5時に自動で落ち着かせる) | on | off
   },
   records:{},   // date(起床日) -> rec
   shifts:{},    // date -> {place,start,end,actualEnd,gym}
@@ -661,7 +665,9 @@ function toast(m){ const d=document.createElement("div"); d.className="toast"; d
   setTimeout(()=>d.remove(),2200); }
 function render(){
   const hh=new Date().getHours();
-  document.body.classList.toggle("dim", hh>=23||hh<5);
+  const nm=S.settings.nightMode||"auto";
+  const dim = nm==="on" ? true : nm==="off" ? false : (hh>=23||hh<5);
+  document.body.classList.toggle("dim", dim);
   const pt=S.game.points||0, lv=Math.floor(pt/300)+1, into=pt%300;
   el("lvl").innerHTML = S.profile.onboarded
     ? `<span class="n">Lv.${lv}</span><span class="bar"><i style="width:${Math.round(into/300*100)}%"></i></span><span class="n">${pt}pt</span>`
@@ -1361,6 +1367,15 @@ function renderSet(){
   </div>
 
   <div class="card">
+    <div class="eyebrow">画面の色合い</div>
+    <label class="f"><span>夜間（23:00〜5:00）は自動で落ち着いた色合いにする</span><select id="s-night">
+      <option value="auto" ${s.nightMode==="auto"?"selected":""}>自動（23:00〜5:00）</option>
+      <option value="on" ${s.nightMode==="on"?"selected":""}>常に落ち着いた色合い</option>
+      <option value="off" ${s.nightMode==="off"?"selected":""}>常に通常の色合い</option></select></label>
+    <p class="tiny" style="margin-top:8px">明るさと彩度を少し落とし、暗所での眩しさを抑えます。文字の大きさや配置は変わりません。</p>
+  </div>
+
+  <div class="card">
     <div class="eyebrow">Xiaomiの数値をアプリに渡す方法</div>
     <p class="small" style="margin:0 0 10px"><b>いちばん確実：</b>Mi Fitness の睡眠画面を見ながら、記録タブの数値欄に打つか、画面の文字をコピーして「この文章から取り込む」に貼る。1日20秒ほどです。</p>
     <p class="small" style="margin:0 0 10px"><b>自動化したいとき：</b>iPhoneのショートカットで、この形のURLを開くようにします。開くだけでその日の記録に入ります。</p>
@@ -1558,6 +1573,7 @@ function saveSettings(){
   s.preset=el("s-preset").value; s.schoolWake=el("s-sw").value; s.vacationWakeCap=el("s-cap").value;
   s.needMin=el("s-need").value?Number(el("s-need").value):null;
   s.debtWindow=Number(el("s-dw").value)||14; s.surplusWeight=Number(el("s-sw2").value);
+  s.nightMode=el("s-night").value;
   document.querySelectorAll("[data-pl]").forEach(inp=>{
     const[k,f]=inp.dataset.pl.split(":"); if(!s.places[k])return;
     s.places[k][f]= inp.type==="number"? (Number(inp.value)||0) : inp.value;
