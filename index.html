@@ -214,6 +214,11 @@ ul.plain{padding-left:20px;margin:10px 0}ul.plain li{margin-bottom:8px}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px;font-weight:600}
 .kv:last-child{border:none}
 .kv b{font-variant-numeric:tabular-nums;font-weight:800}
+.suggest{background:#0E1526;border:2px solid var(--amber);border-radius:16px;padding:14px 16px;margin-top:14px}
+.suggest b{font-size:13px;letter-spacing:.08em;color:var(--amber);display:block;margin-bottom:6px;font-weight:800}
+.rankgrade{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;
+  font-size:32px;font-weight:800;background:linear-gradient(180deg,var(--amber),var(--amber2));color:#231605;
+  box-shadow:0 4px 0 #B96F22;flex-shrink:0}
 .warnbar{background:var(--rose);color:#2B0D08;font-weight:800;padding:12px 16px;font-size:15px;
   border-radius:14px;margin-bottom:14px}
 .instr{counter-reset:st;list-style:none;padding:0;margin:12px 0 0}
@@ -1167,8 +1172,24 @@ function renderAnalyze(){
   const avg=withScore.length?Math.round(withScore.reduce((a,b)=>a+b.s.total,0)/withScore.length):null;
   const spark=db.series.map(x=>x.v);
   const mx=Math.max(60,...spark);
+  const wr=weeklyReport();
   el("v-analyze").innerHTML=`
   <div class="mast"><h2>分析</h2><p>記録 ${days} 日</p></div>
+
+  <div class="card">
+    <div class="eyebrow">今週のレポート（${md(wr.ds[0])}〜${md(wr.ds[6])}）</div>
+    ${wr.rank?`<div class="row" style="gap:14px;margin-bottom:12px">
+      <div class="rankgrade">${wr.rank.grade}</div>
+      <div><div class="small" style="font-weight:800">${wr.rank.label}</div>
+      <p class="tiny" style="margin-top:4px">睡眠時間のばらつき ${wr.rank.durSD}分${wr.rank.hasMid?`／睡眠中央時刻のばらつき ${wr.rank.midSD}分`:""}</p></div>
+    </div>`:`<p class="small mut" style="margin-bottom:12px">記録が週4日たまると、週次リズムのランクが出ます（いま${wr.durs.filter(v=>v!=null).length}日）。</p>`}
+    ${weekChart(wr.ds,wr.durs,wr.need)}
+    <div class="divider"></div>
+    <div class="kv"><span>今週の平均睡眠</span><b>${wr.avg!=null?dur(wr.avg):"—"}</b></div>
+    <div class="kv"><span>必要睡眠との差</span><b>${wr.avg!=null?(wr.avg>=wr.need?"+":"")+durShort(wr.avg-wr.need):"—"}</b></div>
+    ${wr.trend!=null?`<div class="kv"><span>先週比の不足</span><b style="color:${wr.trend>0?"var(--rose)":"var(--lime)"}">${wr.trend>0?"+":""}${durShort(wr.trend)}</b></div>`:""}
+    <div class="suggest"><b>来週への提案</b>${h(wr.suggestion)}</div>
+  </div>
 
   <div class="card">
     <div class="eyebrow">必要睡眠時間</div>
@@ -1217,24 +1238,91 @@ function renderAnalyze(){
     <p class="tiny" style="margin-top:8px">${h(BADGES.filter(b=>!S.game.badges.includes(b.id)).map(b=>b.n+"："+b.d).join(" / "))}</p>
   </div>`;
 }
+const CORR_TESTS=[
+  ["湯船に入った", r=>r.bathType==="tub"],
+  ["湯上がりから60分以上あけた", r=>{ if(!r.bathEnd||!r.inBed)return false; let a=night(r.bathEnd),b=night(r.inBed); if(b<a)b+=1440; return b-a>=60; }],
+  ["食事から3時間以上あけた", r=>{ if(!r.mealTime||!r.inBed)return false; let a=night(r.mealTime),b=night(r.inBed); if(b<a)b+=1440; return b-a>=180; }],
+  ["入眠サウンドを使った", r=>!!r.soundUsed],
+  ["ジムに行った", r=>!!r.gymDone],
+  ["お酒を飲んだ", r=>!!r.alcohol],
+  ["昼寝をした", r=>(r.napMin||0)>0]
+];
 function corrTable(){
   const rs=recArr().filter(r=>r.refreshed);
-  const tests=[
-    ["湯船に入った", r=>r.bathType==="tub"],
-    ["湯上がりから60分以上あけた", r=>{ if(!r.bathEnd||!r.inBed)return false; let a=night(r.bathEnd),b=night(r.inBed); if(b<a)b+=1440; return b-a>=60; }],
-    ["食事から3時間以上あけた", r=>{ if(!r.mealTime||!r.inBed)return false; let a=night(r.mealTime),b=night(r.inBed); if(b<a)b+=1440; return b-a>=180; }],
-    ["入眠サウンドを使った", r=>!!r.soundUsed],
-    ["ジムに行った", r=>!!r.gymDone],
-    ["お酒を飲んだ", r=>!!r.alcohol],
-    ["昼寝をした", r=>(r.napMin||0)>0]
-  ];
-  const rows=tests.map(([n,f])=>{
+  const rows=CORR_TESTS.map(([n,f])=>{
     const a=rs.filter(f).map(r=>r.refreshed), b=rs.filter(r=>!f(r)).map(r=>r.refreshed);
     if(a.length<5||b.length<5) return `<div class="kv"><span>${n}</span><b class="mut">データ不足 ${a.length}/${b.length}</b></div>`;
     const d=(a.reduce((x,y)=>x+y,0)/a.length)-(b.reduce((x,y)=>x+y,0)/b.length);
-    return `<div class="kv"><span>${n}</span><b style="color:${d>0.2?"var(--ok)":d<-0.2?"var(--alert)":"var(--ink2)"}">${d>0?"+":""}${d.toFixed(1)} <span class="tiny">(${a.length}/${b.length}日)</span></b></div>`;
+    return `<div class="kv"><span>${n}</span><b style="color:${d>0.2?"var(--lime)":d<-0.2?"var(--rose)":"var(--ink2)"}">${d>0?"+":""}${d.toFixed(1)} <span class="tiny">(${a.length}/${b.length}日)</span></b></div>`;
   });
   return rows.join("");
+}
+function topCorrelation(){
+  const rs=recArr().filter(r=>r.refreshed);
+  let best=null;
+  CORR_TESTS.forEach(([n,f])=>{
+    const a=rs.filter(f).map(r=>r.refreshed), b=rs.filter(r=>!f(r)).map(r=>r.refreshed);
+    if(a.length<5||b.length<5) return;
+    const d=(a.reduce((x,y)=>x+y,0)/a.length)-(b.reduce((x,y)=>x+y,0)/b.length);
+    if(Math.abs(d)>=0.4 && (!best||Math.abs(d)>Math.abs(best.d))) best={n,d,na:a.length,nb:b.length};
+  });
+  return best;
+}
+
+/* ---- 週次レポート／週次ランク ---- */
+function weekDays(){ const ds=[]; for(let i=6;i>=0;i--) ds.push(addDays(today(),-i)); return ds; }
+function stdev(a){ if(a.length<2) return 0; const m=a.reduce((x,y)=>x+y,0)/a.length;
+  return Math.sqrt(a.reduce((s,v)=>s+(v-m)*(v-m),0)/a.length); }
+function weeklyRank(){
+  const ds=weekDays(), recs=ds.map(d=>S.records[d]).filter(Boolean);
+  const durs=recs.map(sleepMin).filter(v=>v!=null);
+  const mids=recs.map(midSleep).filter(v=>v!=null);
+  if(durs.length<4) return null;
+  const dSD=stdev(durs), hasMid=mids.length>=4, mSD=hasMid?stdev(mids):null;
+  const durPart=Math.max(0,1-dSD/90)*50, midPart=hasMid?Math.max(0,1-mSD/90)*50:20;
+  const sc=Math.round(durPart+midPart);
+  const bands=[[88,"S","とても規則正しい週でした"],[74,"A","規則正しい週でした"],[58,"B","まずまず安定した週でした"],[40,"C","ややばらつきのある週でした"],[0,"D","ばらつきが大きい週でした"]];
+  const b=bands.find(x=>sc>=x[0]);
+  return {score:sc,grade:b[1],label:b[2],durSD:Math.round(dSD),midSD:mSD!=null?Math.round(mSD):null,n:durs.length,hasMid};
+}
+function weeklyReport(){
+  const ds=weekDays(), need=needMin();
+  const durs=ds.map(d=>S.records[d]?sleepMin(S.records[d]):null);
+  const filled=durs.filter(v=>v!=null);
+  const avg=filled.length?Math.round(filled.reduce((a,b)=>a+b,0)/filled.length):null;
+  const rank=weeklyRank();
+  const thisShort=filled.reduce((s,t)=>s+Math.max(0,need-t),0);
+  const prevDs=[]; for(let i=13;i>=7;i--) prevDs.push(addDays(today(),-i));
+  const prevFilled=prevDs.map(d=>S.records[d]?sleepMin(S.records[d]):null).filter(v=>v!=null);
+  const prevShort=prevFilled.reduce((s,t)=>s+Math.max(0,need-t),0);
+  const trend=prevFilled.length>=3?(thisShort-prevShort):null;
+  let suggestion;
+  if(rank&&(rank.grade==="D"||rank.grade==="C")){
+    suggestion="起きる時刻を毎日そろえることを、来週いちばんの目標にしてみてください。就寝時刻より起床時刻を一定にする方が体内時計には効きます。";
+  }else if(trend!=null&&trend>60){
+    suggestion="今週は先週より睡眠不足が"+dur(trend)+"増えました。来週は就寝を20〜30分早める日を数日作ってみてください。";
+  }else{
+    const top=topCorrelation();
+    suggestion = top
+      ? `「${top.n}」の日はスッキリ度が${top.d>0?"高め":"低め"}でした（${top.na}日 / ${top.nb}日）。来週も意識して試してみてください。`
+      : (filled.length<4 ? "記録がもう少したまると、来週への提案が具体的になります。" : "今週は大きな崩れがありませんでした。このリズムを来週も保ちましょう。");
+  }
+  return {ds,durs,avg,need,rank,trend,suggestion};
+}
+function weekChart(ds,durs,need){
+  const w=300,h=90,n=ds.length,bw=w/n;
+  const mx=Math.max(need*1.15,60,...durs.filter(v=>v!=null));
+  const needY=(h-14-(need/mx*(h-20))).toFixed(1);
+  const bars=ds.map((d,i)=>{
+    const v=durs[i], x=(i*bw+bw*0.18).toFixed(1), bwid=(bw*0.64).toFixed(1);
+    if(v==null) return `<rect x="${x}" y="${h-16}" width="${bwid}" height="2" rx="1" fill="var(--line)"/>`;
+    const bh=Math.max(2,v/mx*(h-20)), y=(h-14-bh).toFixed(1);
+    return `<rect x="${x}" y="${y}" width="${bwid}" height="${bh.toFixed(1)}" rx="4" fill="${v>=need?"var(--lime)":"var(--amber)"}"/>`;
+  }).join("");
+  const labels=ds.map((d,i)=>`<text x="${(i*bw+bw/2).toFixed(1)}" y="${h-2}" font-size="8" fill="var(--ink3)" text-anchor="middle">${dow(d)}</text>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px">
+    <line x1="0" y1="${needY}" x2="${w}" y2="${needY}" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3,3"/>
+    ${bars}${labels}</svg>`;
 }
 
 /* ---- 知識 ---- */
