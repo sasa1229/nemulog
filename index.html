@@ -78,6 +78,7 @@ nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(18
 .eyebrow{font-size:13px;font-weight:800;letter-spacing:.1em;color:var(--amber);margin:0 0 10px}
 .eyebrow-h{font-size:15px;font-weight:800;color:var(--ink);margin:0 0 12px;padding-left:11px;
   border-left:4px solid var(--amber);display:flex;align-items:center;gap:7px}
+.eyebrow-h .g{color:var(--amber);flex-shrink:0}
 .mut{color:var(--ink2)}
 .small{font-size:15px;line-height:1.7}
 .tiny{font-size:13.5px;color:var(--ink3);line-height:1.65;font-weight:500}
@@ -89,6 +90,7 @@ nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(18
 .btn.ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line);box-shadow:0 4px 0 rgba(0,0,0,.3)}
 .btn.dawn{background:linear-gradient(180deg,#7EC0FF,var(--dawn));color:#08182B;box-shadow:0 4px 0 #3C6E9E}
 .btn.block{display:block;width:100%}
+.btn svg{vertical-align:-3px;margin-right:2px}
 .btn:active{transform:translateY(3px);box-shadow:none}
 .chip{border:2px solid var(--line);background:var(--panel2);color:var(--ink2);
   padding:11px 16px;border-radius:99px;font-size:15.5px;font-weight:700;min-height:46px}
@@ -128,7 +130,8 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .cta-primary{display:flex;align-items:center;gap:14px;width:100%;min-height:88px;
   background:linear-gradient(180deg,var(--amber),var(--amber2));border-radius:30px;
   padding:16px 20px;margin-bottom:15px;box-shadow:0 4px 0 #B96F22,0 0 26px rgba(240,176,77,.28)}
-.cta-primary .g{font-size:34px;flex-shrink:0}
+.g svg{display:block}
+.cta-primary .g{flex-shrink:0;color:#2E2417}
 .cta-primary .tx{flex:1;text-align:left}
 .cta-primary .tx b{display:block;font-size:22px;font-weight:800;color:#2E2417}
 .cta-primary .tx span{display:block;font-size:13.5px;font-weight:700;color:#5A3F1C;margin-top:2px}
@@ -154,18 +157,19 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .steps li:last-child{border-bottom:none}
 .steps li .num{width:24px;height:24px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);
   display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:1px}
-.steps li .g{font-size:16px;flex-shrink:0;margin-top:1px}
+.steps li .g{flex-shrink:0;margin-top:1px;color:var(--ink2)}
 .steps li .b{flex:1;font-size:15.5px;font-weight:700}
 .steps li .b em{display:block;font-style:normal;font-size:12.5px;font-weight:500;color:var(--ink3);margin-top:1px}
 .steps li .t{font-size:14.5px;font-weight:700;color:var(--ink2);white-space:nowrap;padding-top:2px}
 .steps li.key .num{background:linear-gradient(180deg,var(--amber),var(--amber2));border-color:var(--amber);color:#2E2417}
 .steps li.key .t{color:var(--amber);font-size:17px}
 .steps li.key .b{color:var(--amber)}
+.steps li.key .g{color:var(--amber)}
 
 /* ---- 遅番情報 3分割 ---- */
 .late3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
 .late3 div{background:#0E1526;border:1px solid var(--line);border-radius:14px;padding:12px 6px}
-.late3 .g{width:30px;height:30px;border-radius:50%;background:var(--panel2);font-size:15px;
+.late3 .g{width:30px;height:30px;border-radius:50%;background:var(--panel2);color:var(--amber);
   display:flex;align-items:center;justify-content:center;margin:0 auto 6px}
 .late3 b{display:block;font-size:14.5px;font-weight:800}
 .late3 span{font-size:11.5px;color:var(--ink3);font-weight:700}
@@ -176,7 +180,7 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
   border-radius:18px;padding:14px 14px;text-align:left;box-shadow:0 3px 0 rgba(0,0,0,.25)}
 .shortrow button .top{display:flex;align-items:center;justify-content:space-between}
 .shortrow button .g{width:34px;height:34px;border-radius:50%;background:#0E1526;border:1px solid var(--line);
-  font-size:16px;display:flex;align-items:center;justify-content:center}
+  color:var(--amber);display:flex;align-items:center;justify-content:center}
 .shortrow button b{display:block;font-size:14.5px;font-weight:800;margin-top:10px}
 .shortrow button span{display:block;font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px}
 .shortrow button .arrow{color:var(--ink3);font-size:15px}
@@ -276,7 +280,7 @@ ul.plain{padding-left:20px;margin:10px 0}ul.plain li{margin-bottom:8px}
 <body>
 <header class="top">
   <div class="r1">
-    <div class="brand">🌙 ねむログ ✨</div>
+    <div class="brand"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;color:var(--amber)"><path d="M20 14.7A8.5 8.5 0 1 1 9.3 4a7 7 0 0 0 10.7 10.7Z"/></svg> ねむログ</div>
     <div class="lvl" id="lvl"></div>
   </div>
 </header>
@@ -787,6 +791,29 @@ const TABS=[["home","☾","今夜"],["log","✎","記録"],["analyze","◠","分
 let cur="home", openArt=null;
 function el(id){ return document.getElementById(id); }
 function h(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+// 参照デザインに合わせた線画アイコン（絵文字ではなくSVGの線アイコンで統一）
+const ICONS={
+  moon:'<path d="M20 14.7A8.5 8.5 0 1 1 9.3 4a7 7 0 0 0 10.7 10.7Z"/>',
+  sparkle:'<path d="M12 3v3M12 18v3M3 12h3M18 12h3M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/>',
+  sun:'<circle cx="12" cy="12" r="4.3"/><path d="M12 2.5v3M12 18.5v3M3.5 12h3M17.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/>',
+  house:'<path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M10 20v-5h4v5"/>',
+  meal:'<path d="M8 3v6.5a1.8 1.8 0 0 0 3.6 0V3"/><path d="M9.8 3v18"/><path d="M15.6 3c-1.1 0-1.9 1.6-1.9 4.2s.8 4.2 1.9 4.2V21"/>',
+  bath:'<path d="M4 12.5h16v2.5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-2.5Z"/><path d="M4 12.5V7.3a2 2 0 0 1 3.2-1.6"/><path d="M8.3 20.5v1M15.7 20.5v1"/>',
+  phoneoff:'<rect x="7.5" y="3" width="9" height="18" rx="2"/><path d="M11 18h2"/><path d="M4 4l16 16"/>',
+  clock:'<circle cx="12" cy="12" r="8.3"/><path d="M12 7.7V12l2.8 1.8"/>',
+  calendar:'<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M8 3.2v3.6M16 3.2v3.6M3.5 10h17"/>',
+  music:'<circle cx="7" cy="18" r="2.4"/><path d="M9.4 18V5.5l8.6-1.8v11"/><circle cx="18" cy="14.2" r="2.4"/>',
+  bulb:'<path d="M9.2 18h5.6"/><path d="M10.2 21h3.6"/><path d="M12 3.3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2h5c0-.8.4-1.5 1-2A6 6 0 0 0 12 3.3Z"/>',
+  person:'<circle cx="12" cy="7.3" r="3.3"/><path d="M5.2 20c0-3.7 3-6.8 6.8-6.8s6.8 3.1 6.8 6.8"/>',
+  heart:'<path d="M12 20.2s-6.8-4.3-9.2-8.5C1.1 8.2 2.3 4.9 5.4 4.4a4.8 4.8 0 0 1 6.6 2.4 4.8 4.8 0 0 1 6.6-2.4c3.1.5 4.3 3.8 2.6 7.3-2.4 4.2-9.2 8.5-9.2 8.5Z"/>',
+  book:'<path d="M4 4.5h6.5A2.5 2.5 0 0 1 13 7v13a2 2 0 0 0-2-1.5H4Z"/><path d="M20 4.5h-6.5A2.5 2.5 0 0 0 11 7v13a2 2 0 0 1 2-1.5H20Z"/>',
+  pencil:'<path d="M4 20l.8-3.6L15.6 5.6a1.8 1.8 0 0 1 2.5 0l.3.3a1.8 1.8 0 0 1 0 2.5L7.6 19.2Z"/><path d="M14 7.4l2.6 2.6"/>',
+  chart:'<path d="M4 20V10M9.5 20V5M15 20v-8M20.5 20V13"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.3M12 18.2v2.3M20.5 12h-2.3M5.8 12H3.5M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6M17.8 17.8l-1.6-1.6M7.8 7.8 6.2 6.2"/>'
+};
+function icon(name,size){
+  return `<svg viewBox="0 0 24 24" width="${size||20}" height="${size||20}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||""}</svg>`;
+}
 function tabs(){
   el("tabs").innerHTML=TABS.map(([k,g,n])=>
     `<button data-go="${k}" aria-current="${cur===k}"><span class="g">${g}</span>${n}</button>`).join("");
@@ -867,16 +894,16 @@ function renderHome(){
   const phoneN=Math.max(p.bedN-30, bathBlockEnd);
   const steps=[];
   if(p.ha){
-    steps.push({g:"🏠",b:"帰宅",t:p.ha.hm+"ごろ"});
-    steps.push({g:"🍚",b:"食事（"+p.meal.min+"分）",t:unNight(p.meal.startN)+"ごろ"});
+    steps.push({g:"house",b:"帰宅",t:p.ha.hm+"ごろ"});
+    steps.push({g:"meal",b:"食事（"+p.meal.min+"分）",t:unNight(p.meal.startN)+"ごろ"});
   }
-  steps.push({g:"🛁",b:"入浴",e:"湯上がり・ケア込み",t:unNight(p.bathPlan.bathStartN)+"〜"+unNight(bathBlockEnd)+"ごろ"});
-  steps.push({g:"📵",b:"スマホ終了",t:unNight(phoneN)+"ごろ"});
-  steps.push({g:"🌙",b:"就寝",t:unNight(p.bedN),key:true});
+  steps.push({g:"bath",b:"入浴",e:"湯上がり・ケア込み",t:unNight(p.bathPlan.bathStartN)+"〜"+unNight(bathBlockEnd)+"ごろ"});
+  steps.push({g:"phoneoff",b:"スマホ終了",t:unNight(phoneN)+"ごろ"});
+  steps.push({g:"moon",b:"就寝",t:unNight(p.bedN),key:true});
   const cafe=unNight(p.bedN-360), meal3=unNight(p.bedN-180);
 
   const ctaLabel=morningOpen?"おはよう":"おやすみ";
-  const ctaIcon=morningOpen?"☀️":"🌙";
+  const ctaIcon=morningOpen?"sun":"moon";
   const ctaAction=morningOpen?"wake":"bed";
   const ctaDoneTime=morningOpen?rToday.wake:rTonight.inBed;
   const ctaSub=ctaDoneTime
@@ -892,12 +919,12 @@ function renderHome(){
   ${!STORE_OK?`<div class="warnbar">この画面では記録を保存できません。ファイルを端末で開くか、GitHub Pages に置いて開いてください。</div>`:""}
 
   <button class="cta-primary" data-now="${ctaAction}">
-    <span class="g">${ctaIcon}</span>
+    <span class="g">${icon(ctaIcon,32)}</span>
     <span class="tx"><b>${ctaDoneTime?ctaLabel+"済み":ctaLabel}</b><span>${h(ctaSub)}</span></span>
     <span class="arrow">›</span>
   </button>
   ${ctaDoneTime?`<div class="cta-fix"><span>押し忘れたときは時刻を直せます</span><input type="time" id="cta-fixtime" value="${ctaDoneTime}"></div>`:""}
-  ${morningOpen?`<button class="btn dawn block" style="margin:-6px 0 15px" data-go="log">📝 朝の記録へ（スッキリ度・寝つきなど3問）</button>`:""}
+  ${morningOpen?`<button class="btn dawn block" style="margin:-6px 0 15px" data-go="log">${icon("pencil",16)} 朝の記録へ（スッキリ度・寝つきなど3問）</button>`:""}
 
   <div class="hero">
     <div class="label">今夜の目標就寝</div>
@@ -917,8 +944,8 @@ function renderHome(){
   <div class="card">
     <div class="eyebrow-h">今夜は</div>
     <div class="partner">
-      <button data-partner="0" aria-pressed="${!rTonight.sleepWithPartner}">🧍 ひとり</button>
-      <button data-partner="1" aria-pressed="${!!rTonight.sleepWithPartner}">💛 一緒に寝る</button>
+      <button data-partner="0" aria-pressed="${!rTonight.sleepWithPartner}">${icon("person",17)} ひとり</button>
+      <button data-partner="1" aria-pressed="${!!rTonight.sleepWithPartner}">${icon("heart",17)} 一緒に寝る</button>
     </div>
   </div>
 
@@ -940,7 +967,7 @@ function renderHome(){
   <div class="card">
     <div class="eyebrow-h">今夜の目安</div>
     <ul class="steps">${steps.map((s,i)=>`<li class="${s.key?"key":""}">
-      <span class="num">${i+1}</span><span class="g">${s.g}</span>
+      <span class="num">${i+1}</span><span class="g">${icon(s.g,17)}</span>
       <span class="b">${h(s.b)}${s.e?`<em>${h(s.e)}</em>`:""}</span>
       <span class="t">${s.t}</span></li>`).join("")}</ul>
     <p class="tiny" style="margin-top:10px;text-align:center">※目安。少しずれてもOK</p>
@@ -950,26 +977,26 @@ function renderHome(){
   </div>
 
   ${p.isLate?`<div class="card">
-    <div class="eyebrow-h">🌙 今夜は遅番モード</div>
+    <div class="eyebrow-h">${icon("moon",16)} 今夜は遅番モード</div>
     <div class="late3">
-      <div><span class="g">🏠</span><b>${p.ha?p.ha.hm:"—"}</b><span>帰宅見込み</span></div>
-      <div><span class="g">⏱</span><b>約${p.slack}分</b><span>帰宅後の余裕</span></div>
-      <div><span class="g">🛁</span><b>${h(bathHint)}</b><span>今夜は</span></div>
+      <div><span class="g">${icon("house",15)}</span><b>${p.ha?p.ha.hm:"—"}</b><span>帰宅見込み</span></div>
+      <div><span class="g">${icon("clock",15)}</span><b>約${p.slack}分</b><span>帰宅後の余裕</span></div>
+      <div><span class="g">${icon("bath",15)}</span><b>${h(bathHint)}</b><span>今夜は</span></div>
     </div>
   </div>`:""}
 
   <div class="shortrow">
-    <button data-go="shift"><div class="top"><span class="g">📅</span><span class="arrow">›</span></div><b>シフトを見る</b><span>明日以降の勤務を確認</span></button>
-    <button data-go="sound"><div class="top"><span class="g">♪</span><span class="arrow">›</span></div><b>音を聞く</b><span>入眠サウンドを開く</span></button>
+    <button data-go="shift"><div class="top"><span class="g">${icon("calendar",16)}</span><span class="arrow">›</span></div><b>シフトを見る</b><span>明日以降の勤務を確認</span></button>
+    <button data-go="sound"><div class="top"><span class="g">${icon("music",16)}</span><span class="arrow">›</span></div><b>音を聞く</b><span>入眠サウンドを開く</span></button>
   </div>
 
   <div class="card">
-    <div class="eyebrow-h">💡 今夜のコツ</div>
+    <div class="eyebrow-h">${icon("bulb",16)} 今夜のコツ</div>
     <p class="small" style="margin:0">${h(tipText)}</p>
   </div>
 
   <div class="card">
-    <div class="eyebrow-h">☀️ 明日の朝</div>
+    <div class="eyebrow-h">${icon("sun",16)} 明日の朝</div>
     <ul class="plain small" style="margin:0">
       <li>起床の目安 ${p.wakeTarget.hm}まで</li>
       <li>アラームはスマホ / Xiaomiで設定</li>
