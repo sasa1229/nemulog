@@ -203,6 +203,52 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .shortrow button span{display:block;font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px}
 .shortrow button .arrow{color:var(--ink3);font-size:15px}
 
+/* ---- 記録画面：朝/夜セグメント ---- */
+.segtab{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--panel2);border:1px solid var(--line);
+  border-radius:20px;padding:4px;margin-bottom:15px}
+.segtab button{padding:12px 8px;border-radius:16px;font-weight:800;font-size:15px;color:var(--ink2);
+  display:flex;align-items:center;justify-content:center;gap:7px}
+.segtab button[aria-current="true"]{background:linear-gradient(180deg,var(--amber),var(--amber2));
+  color:#2E2417;box-shadow:0 3px 0 #B96F22,0 0 16px rgba(240,176,77,.3)}
+
+/* ---- 1〜5の顔アイコン評価 ---- */
+.faces{display:flex;gap:4px;justify-content:space-between}
+.faces button{flex:1;padding:8px 2px;border-radius:14px;background:transparent;
+  display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink3)}
+.faces button b{font-size:12.5px;font-weight:800;color:var(--ink3)}
+.faces button[aria-pressed="true"]{color:var(--amber)}
+.faces button[aria-pressed="true"] svg{filter:drop-shadow(0 0 6px rgba(240,176,77,.55))}
+.faces button[aria-pressed="true"] b{color:var(--amber)}
+
+/* ---- 質問行（丸番号＋アイコン＋本文） ---- */
+.qrow{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px}
+.qrow:last-child{margin-bottom:0}
+.qrow .num{width:24px;height:24px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:3px}
+.qrow .g{color:var(--amber);flex-shrink:0;margin-top:3px}
+.qrow .body{flex:1;min-width:0}
+.qrow .body>b{display:block;font-size:15px;font-weight:800;margin-bottom:8px}
+.qrow .capt{display:block;font-size:12px;color:var(--ink3);margin:2px 0 8px}
+
+/* ---- 参考カードの3分割 ---- */
+.reftable{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:10px}
+.reftable div{background:#0E1526;border:1px solid var(--line);border-radius:12px;padding:10px 4px}
+.reftable .g{color:var(--dawn);margin:0 auto 4px}
+.reftable b{display:block;font-size:16px;font-weight:800}
+.reftable span{font-size:11px;color:var(--ink3);font-weight:700}
+
+/* ---- 保存前チェック ---- */
+.checklist{display:flex;flex-direction:column;gap:9px}
+.checklist .ci{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--ink2);font-weight:600}
+.checklist .ci .g{color:var(--lime);flex-shrink:0}
+
+/* ---- 大きな2択（ひとり/彼と一緒、手入力/コード貼り付けなど） ---- */
+.split2{display:flex;gap:8px}
+.split2 button{flex:1;padding:14px 8px;border-radius:18px;border:2px solid var(--line);
+  background:transparent;color:var(--ink2);font-weight:700;font-size:15px;
+  display:flex;align-items:center;justify-content:center;gap:7px;text-align:center}
+.split2 button[aria-pressed="true"]{background:linear-gradient(180deg,var(--amber),var(--amber2));
+  border-color:var(--amber);color:#2E2417;box-shadow:0 0 14px rgba(240,176,77,.3),0 3px 0 #B96F22}
 
 /* ---- meter / ring ---- */
 .meter{height:14px;border-radius:99px;background:#0D1424;border:1px solid var(--line);overflow:hidden}
@@ -827,10 +873,29 @@ const ICONS={
   book:'<path d="M4 4.5h6.5A2.5 2.5 0 0 1 13 7v13a2 2 0 0 0-2-1.5H4Z"/><path d="M20 4.5h-6.5A2.5 2.5 0 0 0 11 7v13a2 2 0 0 1 2-1.5H20Z"/>',
   pencil:'<path d="M4 20l.8-3.6L15.6 5.6a1.8 1.8 0 0 1 2.5 0l.3.3a1.8 1.8 0 0 1 0 2.5L7.6 19.2Z"/><path d="M14 7.4l2.6 2.6"/>',
   chart:'<path d="M4 20V10M9.5 20V5M15 20v-8M20.5 20V13"/>',
-  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.3M12 18.2v2.3M20.5 12h-2.3M5.8 12H3.5M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6M17.8 17.8l-1.6-1.6M7.8 7.8 6.2 6.2"/>'
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.3M12 18.2v2.3M20.5 12h-2.3M5.8 12H3.5M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6M17.8 17.8l-1.6-1.6M7.8 7.8 6.2 6.2"/>',
+  bed:'<path d="M3 19v-7a2 2 0 0 1 2-1h14a2 2 0 0 1 2 1v7"/><path d="M3 16h18"/><path d="M3 19v2M21 19v2"/><path d="M6 11V7a1 1 0 0 1 1-1h3v4"/>',
+  bedDouble:'<path d="M2.5 19v-6.5a2 2 0 0 1 2-1.5h15a2 2 0 0 1 2 1.5V19"/><path d="M2.5 15.5h19"/><path d="M2.5 19v2M21.5 19v2"/><path d="M12 11.5v-4"/>',
+  door:'<rect x="5" y="2.5" width="14" height="19" rx="1"/><circle cx="14.5" cy="12" r=".9" fill="currentColor" stroke="none"/>',
+  clipboard:'<rect x="5.5" y="4.5" width="13" height="17" rx="2"/><path d="M9 4.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 4.5V6H9Z"/><path d="M8.5 11h7M8.5 15h7"/>',
+  watch:'<circle cx="12" cy="12" r="6.5"/><path d="M12 9v3l2 1.3"/><path d="M9.5 2.5h5M9.5 21.5h5"/>',
+  star:'<path d="M12 3.3l2.6 5.5 6 .8-4.4 4.2 1.1 6-5.3-2.9-5.3 2.9 1.1-6-4.4-4.2 6-.8Z"/>',
+  chat:'<path d="M4 4.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H9l-4.5 4V16H4a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z"/>',
+  shieldCheck:'<path d="M12 3l7 3v5.5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6Z"/><path d="M9 12l2 2 4-4.3"/>',
+  ear:'<path d="M8 13.5c0-4.5 2.2-9.5 7-9.5a5.5 5.5 0 0 1 5.5 5.5c0 2-1 3-2.5 3.8-1.2.6-1.5 1.2-1.5 2.2 0 1.4-1.1 2.5-2.5 2.5S11 16.9 11 15.5"/><path d="M8 13.5c0 2.5.5 5 2 7"/>',
+  code:'<path d="M9 8l-4.5 4L9 16M15 8l4.5 4-4.5 4"/>',
+  eye:'<path d="M2 12S5.5 5.5 12 5.5 22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/>'
 };
 function icon(name,size){
   return `<svg viewBox="0 0 24 24" width="${size||20}" height="${size||20}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||""}</svg>`;
+}
+// 1〜5の主観評価の顔アイコン（画像デザインに合わせた表情差分）
+function faceIcon(n,size){
+  const mouth = n<=2? '<path d="M8.5 15.5c.9-1.3 2.4-2 3.5-2s2.6.7 3.5 2"/>'
+    : n===3? '<path d="M8.5 14.8h7"/>'
+    : '<path d="M8.3 14c.9 1.6 2.4 2.5 3.7 2.5s2.8-.9 3.7-2.5"/>';
+  return `<svg viewBox="0 0 24 24" width="${size||22}" height="${size||22}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/><circle cx="8.7" cy="10" r=".9" fill="currentColor" stroke="none"/><circle cx="15.3" cy="10" r=".9" fill="currentColor" stroke="none"/>${mouth}</svg>`;
 }
 function tabs(){
   el("tabs").innerHTML=TABS.map(([k,g,n])=>
@@ -1038,111 +1103,197 @@ function renderHome(){
 }
 
 /* ---- 記録 ---- */
-let logDate=null, logMore=false;
+let logDate=null, logMore=false, logTab=null;
+function logTargetDate(){ return logTab==="morning" ? (logDate||today()) : (logDate||soundTargetDate()); }
+function faceRow(k,v){
+  return `<div class="faces">${[1,2,3,4,5].map(n=>`<button data-sc="${k}:${n}" aria-pressed="${v===n}">${faceIcon(n,24)}<b>${n}</b></button>`).join("")}</div>`;
+}
+function qrow(num,iconName,title,caption,body){
+  return `<div class="qrow"><span class="num">${num}</span><span class="g">${icon(iconName,16)}</span>
+    <div class="body"><b>${h(title)}</b>${caption?`<span class="capt">${h(caption)}</span>`:""}${body}</div></div>`;
+}
 function renderLog(){
-  const d=logDate||today();
+  const hh=new Date().getHours();
+  if(logTab==null) logTab = (hh>=5&&hh<15) ? "morning" : "night";
+  const d=logTargetDate();
   const r=S.records[d]||{};
-  const prev=addDays(d,-1), p=plan(prev), sc=score(d);
+  const title = logTab==="morning" ? "たった3問、約15秒で完了します" : "今日の記録はかんたん1分。未来の自分を楽にします。";
   el("v-log").innerHTML=`
-  <div class="mast"><h2>記録</h2><p>${md(d)}（${dow(d)}）の 朝</p></div>
-  <div class="card">
+  <div class="mast"><h2>記録</h2><p>${h(title)}</p></div>
+  <div class="segtab">
+    <button data-logtab="morning" aria-current="${logTab==="morning"}">${icon("sun",17)} 朝の記録</button>
+    <button data-logtab="night" aria-current="${logTab==="night"}">${icon("moon",17)} 夜の記録</button>
+  </div>
+  <div class="card" style="padding:11px 16px">
     <div class="row spread"><button class="chip" data-day="-1">← 前の日</button>
-      <span class="small mut">${d}</span>
+      <span class="small mut">${d}${logTab==="morning"?"の朝":"の夜"}</span>
       <button class="chip" data-day="1">次の日 →</button></div>
   </div>
-
-  ${sc?`<div class="card">
-    <div class="eyebrow">この日のスコア</div>
-    <div class="row spread" style="align-items:flex-end"><div class="big">${sc.total}<small style="font-size:15px" class="mut">/100</small></div>
-    <div class="tiny">睡眠時間 ${dur(sleepMin(S.records[d])||0)}・確度 ${conf(S.records[d])}</div></div>
-    <div class="stat" style="margin-top:12px">
-      <div><b>${sc.dur}</b><span>時間 /40</span></div>
-      <div><b>${sc.reg}</b><span>規則性 /30</span></div>
-      <div><b>${sc.ref}</b><span>休養感 /30</span></div></div>
-  </div>`:""}
-
+  ${logTab==="morning"?renderLogMorning(d,r):renderLogNight(d,r)}`;
+}
+function renderLogMorning(d,r){
+  const sc=score(d);
+  const prevSleep=sleepMin(r);
+  return `
   <div class="card">
-    <div class="eyebrow">必須・朝の 3 問</div>
-    ${scale("refreshed","スッキリ度（1 だるい ← → 5 快調）",r.refreshed)}
-    ${scale("ease","寝つきの良さ（1 悪い ← → 5 良い）",r.ease)}
-    <label class="f"><span>夜中に目が覚めた回数</span>${numSel("f-awake",r.awakenings,0,10,1,"回",true)}</label>
+    <div class="row spread"><div class="eyebrow-h" style="margin:0;border:none;padding:0">${icon("sun",16)} 朝の3問</div><span class="tiny">最短15秒</span></div>
+    <div style="height:8px"></div>
+    ${qrow(1,"sun","スッキリ度","今の気分は？",faceRow("refreshed",r.refreshed))}
+    ${qrow(2,"moon","寝つき","昨夜の寝つきは？",faceRow("ease",r.ease))}
+    ${qrow(3,"eye","夜中に目が覚めた回数は？","",`<div style="margin-top:2px">${numSel("f-awake",r.awakenings,0,10,1,"回",true)}</div>`)}
   </div>
 
   <div class="card">
-    <div class="eyebrow">時 刻</div>
-    <div class="grid2">
-      <label class="f"><span>布団に入った時刻</span><input id="f-inBed" type="time" value="${r.inBed||""}"></label>
-      <label class="f"><span>起きた時刻</span><input id="f-wake" type="time" value="${r.wake||""}"></label>
+    <div class="row spread"><div class="eyebrow-h" style="margin:0;border:none;padding:0">${icon("moon",16)} 昨夜の記録（参考）</div>
+      ${r.sleepWithPartner!=null?`<span class="badge">${r.sleepWithPartner?icon("heart",11)+" 彼と一緒":icon("person",11)+" ひとり"}</span>`:""}</div>
+    <div class="reftable">
+      <div><span class="g">${icon("bed",18)}</span><b>${r.inBed||"—"}</b><span>就床</span></div>
+      <div><span class="g">${icon("sun",18)}</span><b>${r.wake||"—"}</b><span>起床</span></div>
+      <div><span class="g">${icon("clock",18)}</span><b>${prevSleep!=null?dur(prevSleep):"—"}</b><span>総睡眠</span></div>
     </div>
-    <label class="f"><span>寝つくまでにかかった体感（分）</span>${numSel("f-lat",r.latency,0,120,5,"分",true)}</label>
+    <p class="tiny" style="margin-top:10px">就床・起床は今夜タブの「おやすみ／おはよう」から記録・修正します。</p>
+    ${sc?`<div class="row spread" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+      <span class="small mut">この日のスコア</span><span class="small" style="font-weight:800">${sc.total}<span class="tiny mut">/100</span></span>
+    </div>`:""}
     <div class="row wrap" style="margin-top:12px">
       <button class="chip" data-t="alarmUsed" aria-pressed="${!!r.alarmUsed}">アラームで起きた</button>
       <button class="chip" data-t="isFreeDay" aria-pressed="${!!r.isFreeDay}">自由に寝られた日</button>
     </div>
-    <p class="tiny" style="margin-top:8px">「自由に寝られた日」＝目覚ましなしで自然に起きた日。必要睡眠時間の推定にいちばん効く項目です。</p>
+    <p class="tiny" style="margin-top:8px">「自由に寝られた日」は必要睡眠時間の推定にいちばん効く項目です。</p>
   </div>
 
-  <button class="btn ghost block" data-logmore="1">${logMore?"詳しい記録をたたむ ▲":"もっと記録する（バンドの数値・夜の行動など）▼"}</button>
+  <button class="btn ghost block" data-logmore="1">${logMore?"詳しい記録をたたむ ▲":"もっと記録する（行動メモ・バンドの数値）▼"}</button>
 
   ${!logMore?"":`
   <div class="card" style="margin-top:14px">
-    <div class="eyebrow">バンドの数値（Mi Fitness から転記）</div>
-    <button class="btn dawn block" style="margin-bottom:10px" data-bandsheet="${d}">Xiaomiの画面の順に入力する</button>
-    <button class="btn ghost block" data-bulksheet="1">写真を送った分をまとめて貼る</button>
-    <p class="tiny" style="margin-top:8px">Xiaomiのスクショをこのチャットに送ると、貼るだけで済むブロックにして返します。</p>
-    <label class="f"><span>総睡眠時間（分）</span>${numSel("f-band",r.bandTotal,240,600,5,"分",true)}</label>
-    <div class="grid2">
-      <label class="f"><span>深い（分）</span>${numSel("f-deep",r.deep,0,240,5,"分",true)}</label>
-      <label class="f"><span>レム（分）</span>${numSel("f-rem",r.rem,0,240,5,"分",true)}</label>
+    <div class="eyebrow-h">${icon("clipboard",16)} 前夜の行動メモ（任意）</div>
+    <div class="row wrap">
+      ${["tub:湯船に入った","shower:シャワー","none:入浴なし"].map(s=>{const[k,n]=s.split(":");
+        return `<button class="chip" data-bath="${k}" aria-pressed="${r.bathType===k}">${n}</button>`}).join("")}
     </div>
-    <label class="f"><span>睡眠スコア（バンド）</span>${numSel("f-bs",r.bandScore,0,100,1,"点",true)}</label>
-    <p class="tiny" style="margin-top:8px">深い睡眠とレムは<b>参考値</b>です。機器推定なので絶対値は当てになりません。スコアや負債の計算には使いません。自分の平常値との差だけ見てください。</p>
-    <div class="divider"></div>
-    <label class="f"><span>Mi Fitness の数値を貼り付けて取り込む</span>
+    <div class="grid2" style="margin-top:12px">
+      <label class="f"><span>湯船から出た時刻</span><input id="f-bathEnd" type="time" value="${r.bathEnd||""}"></label>
+      <label class="f"><span>最後の食事の時刻</span><input id="f-meal" type="time" value="${r.mealTime||""}"></label>
+    </div>
+    <div class="row wrap" style="margin-top:12px">
+      ${["軽め","普通","しっかり"].map(n=>`<button class="chip" data-mw="${n}" aria-pressed="${r.mealWeight===n}">食事は${n}</button>`).join("")}
+    </div>
+    <div class="grid2" style="margin-top:12px">
+      <label class="f"><span>最後のカフェイン</span><input id="f-caf" type="time" value="${r.caffeineTime||""}"></label>
+      <label class="f"><span>昼寝（分）</span>${numSel("f-nap",r.napMin,0,120,5,"分",true)}</label>
+    </div>
+    <div class="row wrap" style="margin-top:12px">
+      <button class="chip" data-t="soundUsed" aria-pressed="${!!r.soundUsed}">入眠サウンド使用</button>
+      <button class="chip" data-t="gymDone" aria-pressed="${!!r.gymDone}">ジムに行った</button>
+      <button class="chip" data-t="phoneEarly" aria-pressed="${!!r.phoneEarly}">スマホ早め終了</button>
+      <button class="chip" data-t="alcohol" aria-pressed="${!!r.alcohol}">お酒を飲んだ</button>
+    </div>
+    <p class="tiny" style="margin-top:8px">選ばなくてもOK。あとから見返すと睡眠のヒントに。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow-h">${icon("watch",16)} バンド睡眠記録を取り込む</div>
+    <p class="tiny" style="margin:-4px 0 12px">Xiaomi / Mi Fitness の値は参考値として保存します。</p>
+    <div class="split2">
+      <button data-bandsheet="${d}">${icon("pencil",16)} 手入力</button>
+      <button data-bulksheet="1">${icon("code",16)} まとめて貼る</button>
+    </div>
+    <label class="f"><span>${icon("code",13)} コードや文章を貼り付けて取り込む</span>
       <textarea id="f-bandpaste" placeholder="睡眠時間 7時間10分
 深い睡眠 1時間20分
 レム 1時間40分
 覚醒 2回
 睡眠スコア 82" style="font-size:15px"></textarea></label>
     <button class="btn dawn block" style="margin-top:10px" data-bandparse="1">この文章から取り込む</button>
-    <p class="tiny" style="margin-top:8px">数字と項目名が入っていれば、順番や体裁は自由です。読み取れた分だけ上の欄に入ります。</p>
+    <p class="tiny" style="margin-top:8px">数字と項目名が入っていれば、順番や体裁は自由です。読み取れた分だけ登録されます。</p>
     ${discrepancy(r)?`<p class="small" style="color:var(--amber);margin-top:8px">この日はバンドの数字と体感が食い違っています。こういう日は<b>体感を優先</b>します。</p>`:""}
   </div>
 
   <div class="card">
-    <div class="eyebrow">夜の行動</div>
+    <div class="eyebrow-h">${icon("star",16)} バンド詳細（任意）</div>
+    <p class="tiny" style="margin:-4px 0 10px">Xiaomi / バンド由来の参考値です。深い睡眠・レムは分析には使いません。</p>
+    <label class="f"><span>総睡眠時間（分）</span>${numSel("f-band",r.bandTotal,240,600,5,"分",true)}</label>
+    <div class="grid2">
+      <label class="f"><span>深い（分）</span>${numSel("f-deep",r.deep,0,240,5,"分",true)}</label>
+      <label class="f"><span>レム（分）</span>${numSel("f-rem",r.rem,0,240,5,"分",true)}</label>
+    </div>
+    <label class="f"><span>睡眠スコア（バンド）</span>${numSel("f-bs",r.bandScore,0,100,1,"点",true)}</label>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow-h">${icon("chat",16)} ひとことメモ（任意）</div>
+    <textarea id="f-note" maxlength="200" placeholder="自由に書いてOK">${h(r.note||"")}</textarea>
+  </div>`}
+
+  <div class="card">
+    <div class="eyebrow-h">${icon("shieldCheck",16)} 保存前チェック</div>
+    <div class="checklist">
+      <div class="ci"><span class="g">${icon("shieldCheck",15)}</span>朝の3問は必須です</div>
+      <div class="ci"><span class="g">${icon("shieldCheck",15)}</span>行動メモや詳細は任意です</div>
+      <div class="ci"><span class="g">${icon("shieldCheck",15)}</span>保存すると自動で分析に反映されます</div>
+    </div>
+  </div>
+
+  <button class="btn block" style="margin-top:14px" data-save="1">記録を保存</button>`;
+}
+function renderLogNight(d,r){
+  return `
+  <div class="card">
+    <div class="eyebrow-h">${icon("person",16)} 今夜はだれと寝る？</div>
+    <div class="split2">
+      <button data-partner="0" aria-pressed="${!r.sleepWithPartner}">${icon("person",17)} ひとり</button>
+      <button data-partner="1" aria-pressed="${!!r.sleepWithPartner}">${icon("heart",17)} 彼と一緒</button>
+    </div>
+    <p class="tiny" style="margin-top:8px">あとから変更OK</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow-h">${icon("moon",16)} 今夜の3つだけ</div>
+    ${qrow(1,"sun","眠気レベル","眠い？",faceRow("sleepiness",r.sleepiness))}
+    ${qrow(2,"heart","体調","今の調子は？",faceRow("condition",r.condition))}
+    ${qrow(3,"moon","今の気分","いちばん近いのは？",faceRow("mood",r.mood))}
+    <p class="tiny">飛ばしてもOK。行動と休養感の相関分析に使います。</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow-h">${icon("clipboard",16)} ワンタップ行動ログ</div>
     <div class="row wrap">
-      ${["tub:湯船","shower:シャワー","none:入浴なし"].map(s=>{const[k,n]=s.split(":");
+      ${["tub:湯船に入る","shower:シャワー","none:入浴なし"].map(s=>{const[k,n]=s.split(":");
         return `<button class="chip" data-bath="${k}" aria-pressed="${r.bathType===k}">${n}</button>`}).join("")}
     </div>
-    <div class="grid2">
+    <div class="grid2" style="margin-top:12px">
       <label class="f"><span>湯船から出た時刻</span><input id="f-bathEnd" type="time" value="${r.bathEnd||""}"></label>
       <label class="f"><span>最後の食事の時刻</span><input id="f-meal" type="time" value="${r.mealTime||""}"></label>
     </div>
     <div class="row wrap" style="margin-top:12px">
-      ${["軽め","普通","しっかり"].map(n=>`<button class="chip" data-mw="${n}" aria-pressed="${r.mealWeight===n}">${n}</button>`).join("")}
+      ${["軽め","普通","しっかり"].map(n=>`<button class="chip" data-mw="${n}" aria-pressed="${r.mealWeight===n}">食事は${n}</button>`).join("")}
     </div>
-    <div class="grid2">
+    <div class="grid2" style="margin-top:12px">
       <label class="f"><span>最後のカフェイン</span><input id="f-caf" type="time" value="${r.caffeineTime||""}"></label>
       <label class="f"><span>昼寝（分）</span>${numSel("f-nap",r.napMin,0,120,5,"分",true)}</label>
     </div>
     <div class="row wrap" style="margin-top:12px">
-      <button class="chip" data-t="soundUsed" aria-pressed="${!!r.soundUsed}">入眠サウンドを使った</button>
+      <button class="chip" data-t="soundUsed" aria-pressed="${!!r.soundUsed}">入眠サウンド</button>
       <button class="chip" data-t="gymDone" aria-pressed="${!!r.gymDone}">ジムに行った</button>
+      <button class="chip" data-t="phoneEarly" aria-pressed="${!!r.phoneEarly}">スマホ早め終了</button>
       <button class="chip" data-t="alcohol" aria-pressed="${!!r.alcohol}">お酒を飲んだ</button>
     </div>
-    <label class="f"><span>メモ</span><textarea id="f-note">${h(r.note||"")}</textarea></label>
   </div>
 
-  <div class="card">
-    <div class="eyebrow">任意・夜の3問</div>
-    <p class="tiny" style="margin:0 0 10px">その日の夜、寝る前の状態です。飾りではなく、行動と休養感の相関分析の材料になります。飛ばしても構いません。</p>
-    ${scale("sleepiness","日中の眠気（1 強い ← → 5 なし）",r.sleepiness)}
-    ${scale("condition","体調（1 悪い ← → 5 良い）",r.condition)}
-    ${scale("mood","気分（1 悪い ← → 5 良い）",r.mood)}
-  </div>`}
+  ${r.sleepWithPartner?`<div class="card">
+    <div class="eyebrow-h">${icon("heart",16)} 一緒に寝るメモ（任意）</div>
+    <div class="split2">
+      <button data-psetup="same_bed" aria-pressed="${r.partnerSleepSetup==="same_bed"}">${icon("bedDouble",16)} 同じベッド</button>
+      <button data-psetup="same_room" aria-pressed="${r.partnerSleepSetup==="same_room"}">${icon("door",16)} 同じ部屋（別ベッド）</button>
+    </div>
+    <div class="row wrap" style="margin-top:12px">
+      <button class="chip" data-t="partnerTalk" aria-pressed="${!!r.partnerTalk}">少し話す</button>
+      <button class="chip" data-t="partnerSnore" aria-pressed="${!!r.partnerSnore}">${icon("ear",13)} いびき・寝返りが気になる</button>
+    </div>
+    <p class="tiny" style="margin-top:8px">スキップもOK</p>
+  </div>`:""}
 
-  <button class="btn block" style="margin-top:14px" data-save="1">保存する</button>`;
+  <button class="btn block" style="margin-top:14px" data-save="1">夜の記録を保存</button>`;
 }
 function hmPair(h,m){ const H=Number(h||0), M=Number(m||0); return (isNaN(H)?0:H)*60+(isNaN(M)?0:M); }
 function splitHM(min){ if(min==null||isNaN(min)) return ["",""]; return [Math.floor(min/60), min%60]; }
@@ -1192,10 +1343,11 @@ function bandSheet(date){
     <p class="tiny" style="margin:8px 0 0">Mi Fitnessの睡眠画面と<b>同じ順番</b>に並べています。上から見ながら打つだけです。分に直す計算は要りません。</p>
     <div class="divider"></div>
     <div class="grid2">
-      <label class="f" style="margin:0"><span>ベッドに入った</span><input id="x-bed" type="time" value="${r.inBed||""}"></label>
-      <label class="f" style="margin:0"><span>起床</span><input id="x-wake" type="time" value="${r.wake||""}"></label>
+      <label class="f" style="margin:0"><span>ベッドに入った（参考）</span><input id="x-bed" type="time" value="${r.bandBedTime||r.inBed||""}"></label>
+      <label class="f" style="margin:0"><span>起床（参考）</span><input id="x-wake" type="time" value="${r.bandWakeTime||r.wake||""}"></label>
     </div>
-    <div class="grid2">
+    <p class="tiny" style="margin:6px 0 0">バンドが記録した時刻です。採用する就床・起床は今夜タブの「おやすみ／おはよう」の値を使います。</p>
+    <div class="grid2" style="margin-top:12px">
       ${f("x-lat","入眠までの時間（分）",r.latency,0,60,1,"分")}
       ${f("x-awk","覚醒回数（回）",r.awakenings,0,10,1,"回")}
     </div>
@@ -1206,7 +1358,6 @@ function bandSheet(date){
     <div class="card" style="margin:16px 0 0;background:#0E1526">
       <div class="eyebrow">自動計算</div>
       <div class="row spread"><span class="small">総睡眠時間（レム＋浅い＋深い）</span><b id="x-total" style="font-size:22px">—</b></div>
-      <div id="x-check" class="tiny" style="margin-top:6px"></div>
     </div>
     <button class="btn block" style="margin-top:16px" data-bandsave="${date}">この内容で保存</button>
     <div class="divider"></div>
@@ -1222,15 +1373,6 @@ function bandTotalUpdate(){
   const g=id=>el(id)?el(id).value:"";
   const total=hmPair(g("x-rem-h"),g("x-rem-m"))+hmPair(g("x-light-h"),g("x-light-m"))+hmPair(g("x-deep-h"),g("x-deep-m"));
   el("x-total").textContent = total>0? dur(total) : "—";
-  const bed=g("x-bed"), wake=g("x-wake"), lat=Number(g("x-lat")||0);
-  let msg="";
-  if(bed&&wake&&total>0){
-    let a=night(bed), b=night(wake); if(b<a)b+=1440;
-    const inBedMin=b-a, diff=inBedMin-lat-total;
-    msg="ベッドの中 "+dur(inBedMin)+"／差 "+(diff>=0?"+":"")+Math.round(diff)+"分"+
-      (Math.abs(diff)<=10? "（つじつまが合っています）":"（差が大きいので入力を確認してください）");
-  }
-  el("x-check").textContent=msg;
 }
 function parseBand(t){
   if(!t) return null;
@@ -1251,10 +1393,6 @@ function parseBand(t){
   o.bandScore  = num(/(?:睡眠スコア|スコア)/);
   const has=Object.keys(o).some(k=>o[k]!=null);
   return has? o : null;
-}
-function scale(k,label,v){
-  return `<label class="f"><span>${label}</span></label><div class="row" style="margin-top:6px">
-    ${[1,2,3,4,5].map(n=>`<button class="chip" data-sc="${k}:${n}" aria-pressed="${v===n}" style="flex:1">${n}</button>`).join("")}</div>`;
 }
 // 数字入力の代わりに使うプルダウン。既存値がステップの目盛りからずれていても消えないよう、その値を選択肢に足す
 // id には "id:foo" の代わりに任意のHTML属性文字列（例 'data-pl="x:y"'）も渡せる
@@ -1500,7 +1638,8 @@ const CORR_TESTS=[
   ["ジムに行った", r=>!!r.gymDone],
   ["お酒を飲んだ", r=>!!r.alcohol],
   ["昼寝をした", r=>(r.napMin||0)>0],
-  ["一緒に寝た", r=>!!r.sleepWithPartner]
+  ["一緒に寝た", r=>!!r.sleepWithPartner],
+  ["スマホを早めに終えた", r=>!!r.phoneEarly]
 ];
 // CORR_TESTSの各項目について「該当日/非該当日」のスッキリ度平均差を1回だけ計算し、
 // corrTable/topCorrelationの両方で使い回す（以前は同じ集計を2回別々に行っていた）
@@ -1967,7 +2106,7 @@ document.addEventListener("focusout",e=>{
 document.addEventListener("click",e=>{
   // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
   if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
-  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore],[data-partner]");
+  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore],[data-partner],[data-logtab],[data-psetup]");
   if(!t) return;
   const D=t.dataset;
 
@@ -1984,8 +2123,11 @@ document.addEventListener("click",e=>{
     save(); toast(hm+" を記録しました"); render(); return; }
   if(D.aw!==undefined){ const r=S.records[today()]||(S.records[today()]={});
     r.awakenings = r.awakenings===Number(D.aw)? null : Number(D.aw); save(); render(); return; }
-  if(D.partner!==undefined){ const dd=soundTargetDate(), r=S.records[dd]||(S.records[dd]={});
+  if(D.partner!==undefined){ const dd=(cur==="log")?logTargetDate():soundTargetDate(), r=S.records[dd]||(S.records[dd]={});
     r.sleepWithPartner=D.partner==="1"; save(); render(); return; }
+  if(D.psetup){ const dd=logTargetDate(), r=S.records[dd]||(S.records[dd]={});
+    r.partnerSleepSetup = r.partnerSleepSetup===D.psetup? null : D.psetup; save(); renderLog(); return; }
+  if(D.logtab){ logTab=D.logtab; logMore=false; renderLog(); return; }
   if(D.fix){
     if(D.fix==="meal"){ const sh=S.shifts[today()]; if(sh) S.settings.places[sh.place].mealMin=Math.max(8,(S.settings.places[sh.place].mealMin||15)-5); }
     if(D.fix==="wait"){ S.settings.careMin=Math.max(10,S.settings.careMin-5); }
@@ -1993,12 +2135,12 @@ document.addEventListener("click",e=>{
     save(); toast("調整しました"); render(); return; }
 
   if(D.day){ logDate=addDays(logDate||today(),Number(D.day)); render(); return; }
-  if(D.sc){ const[k,v]=D.sc.split(":"); const d=(cur==="home")?today():(logDate||today());
+  if(D.sc){ const[k,v]=D.sc.split(":"); const d=(cur==="home")?today():(cur==="log"?logTargetDate():(logDate||today()));
     const r=S.records[d]||(S.records[d]={});
     r[k]=r[k]===Number(v)?null:Number(v); save(); render(); return; }
-  if(D.t){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r[D.t]=!r[D.t]; save(); renderLog(); return; }
-  if(D.bath){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r.bathType=r.bathType===D.bath?null:D.bath; save(); renderLog(); return; }
-  if(D.mw){ const d=logDate||today(); const r=S.records[d]||(S.records[d]={}); r.mealWeight=r.mealWeight===D.mw?null:D.mw; save(); renderLog(); return; }
+  if(D.t){ const d=logTargetDate(); const r=S.records[d]||(S.records[d]={}); r[D.t]=!r[D.t]; save(); renderLog(); return; }
+  if(D.bath){ const d=logTargetDate(); const r=S.records[d]||(S.records[d]={}); r.bathType=r.bathType===D.bath?null:D.bath; save(); renderLog(); return; }
+  if(D.mw){ const d=logTargetDate(); const r=S.records[d]||(S.records[d]={}); r.mealWeight=r.mealWeight===D.mw?null:D.mw; save(); renderLog(); return; }
   if(D.save){ saveLog(); return; }
   if(D.bandsheet){ bandSheet(D.bandsheet); return; }
   if(D.bulksheet){ bulkSheet(); return; }
@@ -2014,8 +2156,8 @@ document.addEventListener("click",e=>{
     const d=D.bandsave, r=S.records[d]||(S.records[d]={});
     const g=id=>el(id)?el(id).value:"";
     const rem=hmPair(g("x-rem-h"),g("x-rem-m")), light=hmPair(g("x-light-h"),g("x-light-m")), deep=hmPair(g("x-deep-h"),g("x-deep-m"));
-    if(g("x-bed")) r.inBed=g("x-bed");
-    if(g("x-wake")) r.wake=g("x-wake");
+    if(g("x-bed")) r.bandBedTime=g("x-bed");
+    if(g("x-wake")) r.bandWakeTime=g("x-wake");
     if(g("x-lat")!=="") r.latency=Number(g("x-lat"));
     if(g("x-awk")!=="") r.awakenings=Number(g("x-awk"));
     if(rem) r.rem=rem; if(light) r.light=light; if(deep) r.deep=deep;
@@ -2096,23 +2238,32 @@ function obNext(step){
   renderOnboard();
 }
 function saveLog(){
-  const d=logDate||today(); const r=S.records[d]||(S.records[d]={});
+  const d=logTargetDate(); const r=S.records[d]||(S.records[d]={});
   const g=(id,num)=>{ const v=el(id)?.value; if(v===""||v==null) return null; return num?Number(v):v; };
-  r.inBed=g("f-inBed"); r.wake=g("f-wake"); r.latency=g("f-lat",1);
-  r.awakenings=g("f-awake",1); r.bandTotal=g("f-band",1); r.deep=g("f-deep",1); r.rem=g("f-rem",1); r.bandScore=g("f-bs",1);
-  r.bathEnd=g("f-bathEnd"); r.mealTime=g("f-meal"); r.caffeineTime=g("f-caf"); r.napMin=g("f-nap",1);
+  // 就床/起床/寝つきの体感は今夜タブのCTAとバンド取り込みだけで更新する（ここでは触らない）
+  if(el("f-awake")) r.awakenings=g("f-awake",1);
+  if(el("f-band")) r.bandTotal=g("f-band",1);
+  if(el("f-deep")) r.deep=g("f-deep",1);
+  if(el("f-rem")) r.rem=g("f-rem",1);
+  if(el("f-bs")) r.bandScore=g("f-bs",1);
   if(el("f-note")) r.note=el("f-note").value;
+  if(el("f-bathEnd")) r.bathEnd=g("f-bathEnd");
+  if(el("f-meal")) r.mealTime=g("f-meal");
+  if(el("f-caf")) r.caffeineTime=g("f-caf");
+  if(el("f-nap")) r.napMin=g("f-nap",1);
   if(r.bathEnd&&r.inBed){ let a=night(r.bathEnd),b=night(r.inBed); if(b<a)b+=1440; r.bathWait=b-a; }
-  // 約束の判定とスタンプ
-  const pr=promiseResult(addDays(d,-1));
-  if(pr&&pr.ok===true&&!r.stamped){ r.stamped=true; S.game.stamps++; S.game.streak++;
-    if(plan(addDays(d,-1)).isLate) S.game.lateWins=(S.game.lateWins||0)+1;
-    const sc=score(d); S.game.points+=sc?Math.round(sc.total/5):10;
-    if(S.game.stamps>=7){ S.game.stamps=0; S.game.cards++; S.game.points+=100; toast("スタンプカード達成 +100pt"); }
-    else toast("約束を守れました。スタンプ +1");
-  } else if(pr&&pr.ok===false&&!r.stamped){
-    if(S.game.insurance>0){ S.game.insurance--; toast("未達ですが保険で連続記録を維持しました"); }
-    else { S.game.streak=0; }
+  // 約束の判定とスタンプ（朝の記録保存時のみ。前夜=dの前日の就寝を評価する）
+  if(logTab==="morning"){
+    const pr=promiseResult(addDays(d,-1));
+    if(pr&&pr.ok===true&&!r.stamped){ r.stamped=true; S.game.stamps++; S.game.streak++;
+      if(plan(addDays(d,-1)).isLate) S.game.lateWins=(S.game.lateWins||0)+1;
+      const sc=score(d); S.game.points+=sc?Math.round(sc.total/5):10;
+      if(S.game.stamps>=7){ S.game.stamps=0; S.game.cards++; S.game.points+=100; toast("スタンプカード達成 +100pt"); }
+      else toast("約束を守れました。スタンプ +1");
+    } else if(pr&&pr.ok===false&&!r.stamped){
+      if(S.game.insurance>0){ S.game.insurance--; toast("未達ですが保険で連続記録を維持しました"); }
+      else { S.game.streak=0; }
+    }
   }
   refreshGame(); save(); toast("保存しました"); render();
 }
