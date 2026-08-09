@@ -127,20 +127,38 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .hero .deco{position:absolute;right:-10px;bottom:-6px;width:150px;height:70px;opacity:.22;pointer-events:none}
 
 /* ---- 今夜: 最上部/固定CTA ---- */
-.cta-primary{display:flex;align-items:center;gap:14px;width:100%;min-height:88px;
-  background:linear-gradient(180deg,var(--amber),var(--amber2));border-radius:30px;
-  padding:16px 20px;margin-bottom:15px;box-shadow:0 4px 0 #B96F22,0 0 26px rgba(240,176,77,.28)}
+.cta-primary{position:relative;display:flex;align-items:center;gap:16px;width:100%;min-height:92px;
+  background:linear-gradient(165deg,#FFD08A,var(--amber) 55%,var(--amber2));border-radius:32px;
+  padding:14px 22px;margin-bottom:15px;border:1px solid rgba(255,255,255,.4);
+  box-shadow:0 5px 0 #B96F22,0 0 34px rgba(240,176,77,.38),inset 0 1px 0 rgba(255,255,255,.45);
+  overflow:hidden}
 .g svg{display:block}
-.cta-primary .g{flex-shrink:0;color:#2E2417}
+.cta-primary .icowrap{position:relative;width:56px;height:56px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.6),rgba(255,255,255,.12) 62%,transparent 72%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center}
+.cta-primary .icowrap .spark{position:absolute;color:rgba(255,255,255,.85)}
+.cta-primary .icowrap .spark.s1{top:-3px;right:-2px}
+.cta-primary .icowrap .spark.s2{bottom:2px;left:-6px}
+.cta-primary .g{color:#2E2417}
 .cta-primary .tx{flex:1;text-align:left}
-.cta-primary .tx b{display:block;font-size:22px;font-weight:800;color:#2E2417}
-.cta-primary .tx span{display:block;font-size:13.5px;font-weight:700;color:#5A3F1C;margin-top:2px}
-.cta-primary .arrow{font-size:22px;color:#5A3F1C;flex-shrink:0}
-.cta-primary:active{transform:translateY(3px);box-shadow:none}
+.cta-primary .tx b{display:block;font-size:24px;font-weight:800;color:#2E2417;letter-spacing:.03em}
+.cta-primary .tx span{display:block;font-size:13.5px;font-weight:700;color:#5A3F1C;margin-top:3px}
+.cta-primary .arrow{font-size:24px;color:rgba(46,36,23,.55);flex-shrink:0}
+.cta-primary:active{transform:translateY(3px);box-shadow:0 0 20px rgba(240,176,77,.3)}
 .cta-fix{display:flex;align-items:center;justify-content:space-between;gap:10px;
   background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:10px 14px;
   margin:-6px 0 15px;font-size:13.5px;color:var(--ink2);font-weight:700}
 .cta-fix input{width:auto;flex:0 0 auto;padding:6px 10px;font-size:14px;min-height:0}
+.morning-link{display:flex;align-items:center;gap:13px;width:100%;
+  background:linear-gradient(180deg,var(--panel),#19243F);border:1px solid var(--line);
+  border-radius:20px;padding:13px 16px;margin:-6px 0 15px;box-shadow:0 3px 0 rgba(0,0,0,.25);text-align:left}
+.morning-link .g{width:38px;height:38px;border-radius:50%;background:#0E1526;border:1px solid var(--line);
+  color:var(--dawn);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.morning-link .tx{flex:1}
+.morning-link .tx b{display:block;font-size:15.5px;font-weight:800;color:var(--ink)}
+.morning-link .tx span{display:block;font-size:12.5px;color:var(--ink3);font-weight:600;margin-top:2px}
+.morning-link .arrow{color:var(--ink3);font-size:19px;flex-shrink:0}
+.morning-link:active{transform:translateY(2px);box-shadow:none}
 
 /* ---- 今夜は：ひとり／一緒に寝る ---- */
 .partner{display:flex;gap:8px}
@@ -919,12 +937,20 @@ function renderHome(){
   ${!STORE_OK?`<div class="warnbar">この画面では記録を保存できません。ファイルを端末で開くか、GitHub Pages に置いて開いてください。</div>`:""}
 
   <button class="cta-primary" data-now="${ctaAction}">
-    <span class="g">${icon(ctaIcon,32)}</span>
+    <span class="icowrap">
+      <span class="spark s1">${icon("sparkle",9)}</span>
+      <span class="g">${icon(ctaIcon,28)}</span>
+      <span class="spark s2">${icon("sparkle",7)}</span>
+    </span>
     <span class="tx"><b>${ctaDoneTime?ctaLabel+"済み":ctaLabel}</b><span>${h(ctaSub)}</span></span>
     <span class="arrow">›</span>
   </button>
   ${ctaDoneTime?`<div class="cta-fix"><span>押し忘れたときは時刻を直せます</span><input type="time" id="cta-fixtime" value="${ctaDoneTime}"></div>`:""}
-  ${morningOpen?`<button class="btn dawn block" style="margin:-6px 0 15px" data-go="log">${icon("pencil",16)} 朝の記録へ（スッキリ度・寝つきなど3問）</button>`:""}
+  ${morningOpen?`<button class="morning-link" data-go="log">
+    <span class="g">${icon("pencil",17)}</span>
+    <span class="tx"><b>朝の記録へ</b><span>スッキリ度・寝つきなど3問</span></span>
+    <span class="arrow">›</span>
+  </button>`:""}
 
   <div class="hero">
     <div class="label">今夜の目標就寝</div>
@@ -1934,6 +1960,10 @@ document.addEventListener("focusin",e=>{
     setTimeout(()=>{ try{ t.scrollIntoView({block:"center",behavior:"smooth"}); }catch(err){} },250);
   }
 });
+// 時刻ピッカーを操作し終えて指を離した（フォーカスが外れた）タイミングで画面を更新する
+document.addEventListener("focusout",e=>{
+  if(e.target&&e.target.id==="cta-fixtime"){ toast("時刻を直しました"); render(); }
+});
 document.addEventListener("click",e=>{
   // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
   if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
@@ -2125,12 +2155,14 @@ document.addEventListener("change",e=>{
   }
   const id=e.target&&e.target.id;
   if(id==="cta-fixtime"){
+    // ここでrender()すると、時刻ピッカーの操作途中でDOMごと作り直されて
+    // ピッカーが閉じてしまう。値の保存だけ行い、画面の更新はblur時にする
     const v=e.target.value; if(!v) return;
     const morningNow=new Date().getHours()>=5 && new Date().getHours()<15;
     const dd=morningNow?today():soundTargetDate();
     const r=S.records[dd]||(S.records[dd]={});
     if(morningNow) r.wake=v; else r.inBed=v;
-    save(); toast("時刻を直しました"); render();
+    save();
   }
   if(id==="sd-base"||id==="sd-beat"||id==="sd-vol"||id==="sd-timer"||id==="sd-noise"){
     const sd=S.settings.sound;
