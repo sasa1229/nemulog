@@ -67,7 +67,9 @@ nav.tabs button .g{font-size:21px;line-height:1}
 nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(180deg,var(--amber),var(--amber2));
   box-shadow:0 4px 14px rgba(255,159,69,.28)}
 .view{display:none}.view.on{display:block;animation:fade .28s ease}
-@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* opacityのみ（transformを入れない）。transformを animate すると、その間 position:fixed の
+   子要素（.cta-fixedなど）の基準点がビューポートからこの要素にズレてしまうため */
+@keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* ---- primitives ---- */
 .card{background:linear-gradient(180deg,var(--panel),#19243F);border:1px solid var(--line);
@@ -108,9 +110,9 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .badge.bad{color:#2B0D08;background:var(--rose);border-color:var(--rose)}
 
 /* ---- signature: 時刻表 ---- */
-.hero{padding:24px 18px 20px;border:2px solid var(--line);border-radius:24px;margin-bottom:15px;
+.hero{position:relative;padding:24px 18px 20px;border:2px solid var(--line);border-radius:26px;margin-bottom:15px;
   background:radial-gradient(130% 100% at 50% 0%,#2A3A66 0%,#1B2745 55%,#141D33 100%);
-  box-shadow:0 6px 0 rgba(0,0,0,.3)}
+  box-shadow:0 6px 0 rgba(0,0,0,.3);overflow:hidden}
 .hero .label{font-size:14px;font-weight:800;letter-spacing:.14em;color:var(--amber);text-align:center}
 .hero .time{font-size:78px;font-weight:800;line-height:1;text-align:center;margin:8px 0 6px;
   font-variant-numeric:tabular-nums;letter-spacing:-.02em;
@@ -118,26 +120,63 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
   -webkit-text-fill-color:transparent}
 .hero .note{text-align:center;font-size:14.5px;color:var(--ink2);font-weight:600}
 .hero .mode{text-align:center;margin-top:12px;display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
+.hero .deco{position:absolute;right:-10px;bottom:-6px;width:150px;height:70px;opacity:.22;pointer-events:none}
 
-.tt{margin:4px 0 0;padding:0;list-style:none;position:relative}
-.tt:before{content:"";position:absolute;left:69px;top:16px;bottom:22px;width:3px;border-radius:3px;
-  background:linear-gradient(180deg,var(--line),rgba(55,71,117,.2))}
-.tt li{display:grid;grid-template-columns:62px 26px 1fr;align-items:start;padding:11px 0;
-  animation:slide .35s ease backwards}
-.tt li .t{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--dawn);
-  font-variant-numeric:tabular-nums;padding-top:2px}
-.tt li .d{position:relative;height:24px}
-.tt li .d:after{content:"";position:absolute;left:1px;top:6px;width:13px;height:13px;border-radius:50%;
-  background:var(--bg);border:3px solid var(--ink3)}
-.tt li.done .d:after{background:var(--lime);border-color:var(--lime)}
-.tt li.key .d:after{border-color:var(--amber);background:var(--amber);width:16px;height:16px;left:0;top:5px;
-  box-shadow:0 0 0 5px rgba(255,193,94,.18)}
-.tt li .b{font-size:16.5px;font-weight:700}
-.tt li .b em{display:block;font-style:normal;font-size:14px;font-weight:500;color:var(--ink3);margin-top:2px}
-.tt li button.tick{margin-top:8px;font-size:14px;font-weight:700;color:var(--ink2);
-  border:2px solid var(--line);background:var(--panel2);border-radius:99px;padding:10px 16px;min-height:40px}
-.tt li.done button.tick{color:#0F2A17;background:var(--lime);border-color:var(--lime)}
-@keyframes slide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+/* ---- 今夜: 最上部/固定CTA ---- */
+.cta-primary{display:flex;align-items:center;gap:14px;width:100%;min-height:88px;
+  background:linear-gradient(180deg,var(--amber),var(--amber2));border-radius:30px;
+  padding:16px 20px;margin-bottom:15px;box-shadow:0 4px 0 #B96F22,0 0 26px rgba(240,176,77,.28)}
+.cta-primary .g{font-size:34px;flex-shrink:0}
+.cta-primary .tx{flex:1;text-align:left}
+.cta-primary .tx b{display:block;font-size:22px;font-weight:800;color:#2E2417}
+.cta-primary .tx span{display:block;font-size:13.5px;font-weight:700;color:#5A3F1C;margin-top:2px}
+.cta-primary .arrow{font-size:22px;color:#5A3F1C;flex-shrink:0}
+.cta-primary:active{transform:translateY(3px);box-shadow:none}
+.cta-link{display:block;text-align:center;font-size:14.5px;font-weight:700;color:var(--dawn);margin:-6px 0 15px}
+.cta-fixed{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(84px + env(safe-area-inset-bottom));z-index:25;
+  display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,var(--amber),var(--amber2));
+  color:#2E2417;font-weight:800;font-size:14.5px;padding:10px 20px;border-radius:99px;
+  box-shadow:0 6px 18px rgba(0,0,0,.45),0 0 16px rgba(240,176,77,.3)}
+
+/* ---- 今夜は：ひとり／一緒に寝る ---- */
+.partner{display:flex;gap:8px}
+.partner button{flex:1;padding:14px 8px;border-radius:18px;border:2px solid var(--line);
+  background:transparent;color:var(--ink2);font-weight:700;font-size:15px;
+  display:flex;align-items:center;justify-content:center;gap:7px}
+.partner button[aria-pressed="true"]{background:linear-gradient(180deg,var(--amber),var(--amber2));
+  border-color:var(--amber);color:#2E2417;box-shadow:0 0 14px rgba(240,176,77,.3),0 3px 0 #B96F22}
+
+/* ---- 今夜の目安（簡易ステップ） ---- */
+.steps{margin:6px 0 0;padding:0;list-style:none}
+.steps li{display:flex;align-items:flex-start;gap:12px;padding:9px 0;
+  border-bottom:1px dashed rgba(255,255,255,.1)}
+.steps li:last-child{border-bottom:none}
+.steps li .num{width:26px;height:26px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.steps li .g{font-size:16px}
+.steps li .b{flex:1;font-size:15.5px;font-weight:700}
+.steps li .b em{display:block;font-style:normal;font-size:12.5px;font-weight:500;color:var(--ink3);margin-top:1px}
+.steps li .t{font-size:14.5px;font-weight:700;color:var(--ink2);white-space:nowrap;padding-top:2px}
+.steps li.key .t{color:var(--amber);font-size:17px}
+.steps li.key .b{color:var(--amber)}
+
+/* ---- 遅番情報 3分割 ---- */
+.late3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.late3 div{background:#0E1526;border:1px solid var(--line);border-radius:14px;padding:12px 6px}
+.late3 .g{font-size:17px;display:block;margin-bottom:4px}
+.late3 b{display:block;font-size:14.5px;font-weight:800}
+.late3 span{font-size:11.5px;color:var(--ink3);font-weight:700}
+
+/* ---- ショートカット2枚 ---- */
+.shortrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px}
+.shortrow button{background:linear-gradient(180deg,var(--panel),#19243F);border:2px solid var(--line);
+  border-radius:18px;padding:14px 14px;text-align:left;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.shortrow button .g{font-size:20px}
+.shortrow button b{display:block;font-size:14.5px;font-weight:800;margin-top:8px}
+.shortrow button span{display:block;font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px}
+.shortrow button .arrow{float:right;color:var(--ink3)}
+
 
 /* ---- meter / ring ---- */
 .meter{height:14px;border-radius:99px;background:#0D1424;border:1px solid var(--line);overflow:hidden}
@@ -222,12 +261,6 @@ ul.plain{padding-left:20px;margin:10px 0}ul.plain li{margin-bottom:8px}
 .rankgrade{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;
   font-size:32px;font-weight:800;background:linear-gradient(180deg,var(--amber),var(--amber2));color:#231605;
   box-shadow:0 4px 0 #B96F22;flex-shrink:0}
-.qlinks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 15px}
-.qlinks button{background:linear-gradient(180deg,var(--panel),#19243F);border:2px solid var(--line);
-  border-radius:16px;padding:14px 4px;display:flex;flex-direction:column;align-items:center;gap:7px;
-  font-size:13px;font-weight:700;color:var(--ink2);min-height:72px;box-shadow:0 3px 0 rgba(0,0,0,.25)}
-.qlinks button .g{font-size:24px}
-.qlinks button:active{transform:translateY(3px);box-shadow:none}
 .warnbar{background:var(--rose);color:#2B0D08;font-weight:800;padding:12px 16px;font-size:15px;
   border-radius:14px;margin-bottom:14px}
 .instr{counter-reset:st;list-style:none;padding:0;margin:12px 0 0}
@@ -267,7 +300,6 @@ const store={
   get(k){ try{const v=localStorage.getItem(k);return v===null?(k in mem?mem[k]:null):v;}catch(e){return k in mem?mem[k]:null;} },
   set(k,v){ mem[k]=v; try{ localStorage.setItem(k,v); localStorage.setItem(k+".bak."+(new Date().getDate()%2), v); STORE_OK=true; }catch(e){ STORE_OK=false; } }
 };
-const standalone = (window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches) || navigator.standalone===true;
 const KEY="nemulog.v1";
 const DEFAULTS={
   profile:{ name:"", ageBand:"18-25", usualBed:"00:30", usualWake:"08:00",
@@ -747,7 +779,7 @@ const EVL={3:{c:"e3",t:"★★★ 確立"},2:{c:"e2",t:"★★ 有力"},1:{c:"e1
 
 /* ============ 描画 ============ */
 const V=["home","log","shift","analyze","sound","know","set"];
-const TABS=[["home","☾","今夜"],["log","✎","記録"],["analyze","◠","分析"],["set","⚙","設定"]];
+const TABS=[["home","☾","今夜"],["log","✎","記録"],["analyze","◠","分析"],["know","▮","知識"],["set","⚙","設定"]];
 let cur="home", openArt=null;
 function el(id){ return document.getElementById(id); }
 function h(s){ return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
@@ -820,55 +852,48 @@ const CHRONO=[
 function renderHome(){
   const d=today(), p=plan(d), db=debt(), est=estimateNeed();
   const sh=S.shifts[d];
-  const tl=[];
-  if(p.ha){
-    tl.push({t:p.ha.hm,b:"帰宅",e:p.ha.why,key:false,id:"home"});
-    tl.push({t:unNight(p.ha.n+2),b:"照明を落とす",e:"暖色・間接照明に",id:"light"});
-    tl.push({t:unNight(p.meal.startN),b:"食事（"+p.meal.min+"分）",e:(p.meal.weight||"")+"／入浴より先に済ませる",id:"meal"});
-  }
-  tl.push({t:unNight(p.bathPlan.bathStartN),b:"入浴（"+p.bathPlan.bath+"分）",e:p.bathPlan.label,id:"bath"});
-  tl.push({t:unNight(p.bathPlan.bathEndN),b:"湯上がり → スキンケア・ドライヤー",e:S.settings.careMin+"分",id:"care"});
-  const phoneN=Math.max(p.bedN-30, p.bathPlan.bathEndN+S.settings.careMin);
-  tl.push({t:unNight(phoneN),b:"スマホを置く",e:"新しい情報を入れない",id:"phone"});
-  tl.push({t:unNight(p.bedN),b:"就寝",e:"湯上がりから"+p.bathPlan.realWait+"分",key:true,id:"bed"});
-  const tick=S.records[addDays(d,1)]?.ticks||{};
-  const cafe=unNight(p.bedN-360), meal3=unNight(p.bedN-180);
-  const pr=lastNightResult();
   const hh=new Date().getHours();
+  const morningOpen = hh>=5 && hh<15; // 05:00-14:59 おはよう／15:00-04:59 おやすみ
   const rToday=S.records[d]||{};
-  const morningOpen = hh>=3 && hh<15;
-  const quick = morningOpen ? `
-  <div class="card" style="border-color:var(--amber)">
-    <div class="eyebrow">今朝の記録（タップだけ・15秒）</div>
-    ${rToday.wake? `<p class="small">起床 <b>${rToday.wake}</b> で記録しました</p>`
-      : `<button class="btn block" data-now="wake">いま起きた（起床時刻を記録）</button>`}
-    <div class="divider"></div>
-    <p class="small" style="margin:0 0 6px">スッキリ度</p>
-    <div class="row">${[1,2,3,4,5].map(n=>`<button class="chip" data-sc="refreshed:${n}" aria-pressed="${rToday.refreshed===n}" style="flex:1;padding:11px 0">${n}</button>`).join("")}</div>
-    <p class="small" style="margin:14px 0 6px">寝つきの良さ</p>
-    <div class="row">${[1,2,3,4,5].map(n=>`<button class="chip" data-sc="ease:${n}" aria-pressed="${rToday.ease===n}" style="flex:1;padding:11px 0">${n}</button>`).join("")}</div>
-    <p class="small" style="margin:14px 0 6px">夜中に目が覚めた回数</p>
-    <div class="row">${[0,1,2,3].map(n=>`<button class="chip" data-aw="${n}" aria-pressed="${rToday.awakenings===n}" style="flex:1;padding:11px 0">${n===3?"3+":n}</button>`).join("")}</div>
-    ${(rToday.refreshed&&rToday.ease&&rToday.awakenings!=null)
-      ? `<p class="small" style="margin:14px 0 0;color:var(--lime)"><b>3問そろいました。</b>これだけで分析は動きます。</p>`
-      : `<p class="tiny" style="margin:12px 0 0">タップした時点で自動保存されます。保存ボタンは要りません。</p>`}
-    <button class="btn dawn block" style="margin-top:12px" data-bandsheet="${d}">Xiaomiの数値を入力（30秒）</button>
-    <button class="btn ghost block" style="margin-top:8px" data-bulksheet="1">まとめて貼る（写真を送った分）</button>
-  </div>` : `
-  <div class="card">
-    <div class="eyebrow">寝るとき</div>
-    ${(S.records[addDays(d,1)]||{}).inBed
-      ? `<p class="small">就床 <b>${S.records[addDays(d,1)].inBed}</b> で記録しました</p>`
-      : `<button class="btn block" data-now="bed">おやすみ（布団に入った時刻を記録）</button>`}
-    <p class="tiny" style="margin-top:10px">押すだけで就床時刻が入ります。朝はこの画面に3問が出ます。</p>
-  </div>`;
+  const tonightDate=soundTargetDate();
+  const rTonight=S.records[tonightDate]||{};
+  const pr=lastNightResult();
+
+  const bathBlockEnd=p.bathPlan.bathEndN+S.settings.careMin;
+  const phoneN=Math.max(p.bedN-30, bathBlockEnd);
+  const steps=[];
+  if(p.ha){
+    steps.push({g:"🏠",b:"帰宅",t:p.ha.hm+"ごろ"});
+    steps.push({g:"🍚",b:"食事（"+p.meal.min+"分）",t:unNight(p.meal.startN)+"ごろ"});
+  }
+  steps.push({g:"🛁",b:"入浴",e:"湯上がり・ケア込み",t:unNight(p.bathPlan.bathStartN)+"〜"+unNight(bathBlockEnd)+"ごろ"});
+  steps.push({g:"📵",b:"スマホ終了",t:unNight(phoneN)+"ごろ"});
+  steps.push({g:"🌙",b:"就寝",t:unNight(p.bedN),key:true});
+  const cafe=unNight(p.bedN-360), meal3=unNight(p.bedN-180);
+
+  const ctaLabel=morningOpen?"おはよう":"おやすみ";
+  const ctaIcon=morningOpen?"☀️":"🌙";
+  const ctaAction=morningOpen?"wake":"bed";
+  const ctaDoneTime=morningOpen?rToday.wake:rTonight.inBed;
+  const ctaSub=ctaDoneTime
+    ? (morningOpen?"起床 "+ctaDoneTime+" で記録しました":"就床 "+ctaDoneTime+" で記録しました")
+    : (morningOpen?"起きたら1タップ":"布団に入ったら1タップ");
+
+  const bathHint=p.bathPlan.bath<=10?"シャワーのみがおすすめ":p.bathPlan.wait<=45?"短め入浴がおすすめ":"通常の入浴でOK";
+  const tipText=p.isLate
+    ? `帰宅が遅い夜は、入浴は短め・シャワーだけでも十分です。${unNight(p.bedN)}ぴったりにこだわりすぎなくてOK。`
+    : `帰宅したら照明を少し落として、食事→入浴の順がおすすめ。${unNight(p.bedN)}ぴったりにこだわりすぎなくてOK。`;
+
   el("v-home").innerHTML=`
   ${!STORE_OK?`<div class="warnbar">この画面では記録を保存できません。ファイルを端末で開くか、GitHub Pages に置いて開いてください。</div>`:""}
-  ${(!standalone&&!S.game.hideInstall)?`<div class="card" style="border-color:var(--dawn)"><div class="eyebrow" style="color:var(--dawn)">ホーム画面に追加すると使いやすくなります</div>
-    <ol class="instr small"><li>Safari の共有ボタン（□に↑）を押す</li><li>「ホーム画面に追加」を選ぶ</li><li>名前は「ねむログ」でそのまま追加</li></ol>
-    <p class="tiny" style="margin-top:10px">追加するとアドレスバーが消えて全画面になり、記録もそのまま残ります。</p>
-    <button class="chip" style="margin-top:12px" data-hideinstall="1">この案内を閉じる</button></div>`:""}
-  ${quick}
+
+  <button class="cta-primary" data-now="${ctaAction}">
+    <span class="g">${ctaIcon}</span>
+    <span class="tx"><b>${ctaDoneTime?ctaLabel+"済み":ctaLabel}</b><span>${h(ctaSub)}</span></span>
+    <span class="arrow">›</span>
+  </button>
+  ${morningOpen?`<button class="cta-link" data-go="log">朝の3問を記録する →</button>`:""}
+
   <div class="hero">
     <div class="label">今夜の目標就寝</div>
     <div class="time">${unNight(p.bedN)}</div>
@@ -878,12 +903,18 @@ function renderHome(){
       ${sh?`<span class="badge">${h(sh.place)} ${h(sh.actualEnd||sh.end)}まで</span>`:`<span class="badge">バイトなし</span>`}
       <span class="badge">必要睡眠の確度：${est.conf}</span>
     </div>
+    <svg class="deco" viewBox="0 0 150 70" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="124" cy="18" r="13" fill="#F0B368"/>
+      <path d="M0 70 L20 40 L38 58 L60 28 L82 52 L104 30 L150 70 Z" fill="#0B1226"/>
+    </svg>
   </div>
 
-  <div class="qlinks">
-    <button data-go="shift"><span class="g">▤</span>予定・シフト</button>
-    <button data-go="sound"><span class="g">♪</span>音を聞く</button>
-    <button data-go="know"><span class="g">▮</span>知識を読む</button>
+  <div class="card">
+    <div class="eyebrow">今夜は</div>
+    <div class="partner">
+      <button data-partner="0" aria-pressed="${!rTonight.sleepWithPartner}">🧍 ひとり</button>
+      <button data-partner="1" aria-pressed="${!!rTonight.sleepWithPartner}">💛 一緒に寝る</button>
+    </div>
   </div>
 
   ${p.shortfall>0?`<div class="card" style="border-color:#5C332C">
@@ -901,26 +932,44 @@ function renderHome(){
     <button class="chip" data-fix="wait">湯上がりの待ちを詰める</button>
     <button class="chip" data-fix="bed">就寝を15分遅らせる</button></div></div>`:""}
 
-  ${(()=>{ const nx=tl.find(x=>!tick[x.id]);
-    return nx ? `<div class="card" style="border-color:var(--amber);text-align:center">
-      <div class="eyebrow">つぎに</div>
-      <div class="serif" style="font-size:27px;margin:2px 0">${h(nx.b)}</div>
-      <p class="small mut" style="margin:0 0 14px">${nx.t}　${h(nx.e||"")}</p>
-      <button class="btn block" style="font-size:19px;padding:19px" data-tick="${nx.id}">できた（記録する）</button>
-    </div>` : `<div class="card" style="border-color:var(--lime);text-align:center">
-      <div class="eyebrow" style="color:var(--lime)">今夜はここまで</div>
-      <p class="small mut" style="margin:0">やることは全部終わりました。おやすみなさい。</p>
-    </div>`; })()}
-
   <div class="card">
-    <div class="eyebrow">今夜の流れ（すべて）</div>
-    <ul class="tt">${tl.map((x,i)=>`<li class="${tick[x.id]?"done":""} ${x.key?"key":""}" style="animation-delay:${i*45}ms">
-      <span class="t">${x.t}</span><span class="d"></span>
-      <span class="b">${h(x.b)}<em>${h(x.e||"")}</em>
-      <button class="tick" data-tick="${x.id}">${tick[x.id]?"できた":"記録する"}</button></span></li>`).join("")}</ul>
+    <div class="eyebrow">今夜の目安</div>
+    <ul class="steps">${steps.map((s,i)=>`<li class="${s.key?"key":""}">
+      <span class="num">${s.key?`<span class="g">${s.g}</span>`:i+1}</span>
+      <span class="b">${h(s.b)}${s.e?`<em>${h(s.e)}</em>`:""}</span>
+      <span class="t">${s.t}</span></li>`).join("")}</ul>
+    <p class="tiny" style="margin-top:10px;text-align:center">※目安。少しずれてもOK</p>
     <div class="divider"></div>
     <div class="kv"><span>カフェイン終了</span><b>${cafe}</b></div>
     <div class="kv"><span>できれば食事は</span><b>${meal3} まで</b></div>
+  </div>
+
+  ${p.isLate?`<div class="card">
+    <div class="eyebrow">今夜は遅番モード</div>
+    <div class="late3">
+      <div><span class="g">🏠</span><b>${p.ha?p.ha.hm:"—"}</b><span>帰宅見込み</span></div>
+      <div><span class="g">⏱</span><b>約${p.slack}分</b><span>帰宅後の余裕</span></div>
+      <div><span class="g">🛁</span><b>${h(bathHint)}</b><span>今夜は</span></div>
+    </div>
+  </div>`:""}
+
+  <div class="shortrow">
+    <button data-go="shift"><span class="arrow">›</span><span class="g">📅</span><b>シフトを見る</b><span>明日以降の勤務を確認</span></button>
+    <button data-go="sound"><span class="arrow">›</span><span class="g">♪</span><b>音を聞く</b><span>入眠サウンドを開く</span></button>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">今夜のコツ</div>
+    <p class="small" style="margin:0">${h(tipText)}</p>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">明日の朝</div>
+    <ul class="plain small" style="margin:0">
+      <li>起床の目安 ${p.wakeTarget.hm}まで</li>
+      <li>アラームはスマホ / Xiaomiで設定</li>
+      <li>5:00になるとボタンは「おはよう」に切り替わります</li>
+    </ul>
   </div>
 
   <div class="row wrap" style="justify-content:center;margin:2px 0 15px">
@@ -928,9 +977,9 @@ function renderHome(){
     <span class="streak">負債 <b>${db.min<=0?"なし":dur(db.min)}</b></span>
     ${pr?`<span class="streak">昨夜 <b>${pr.ok===null?"免除日":(pr.ok?"達成":"未達")}</b></span>`:""}
   </div>
+  <div style="height:6px"></div>
 
-  <button class="btn ghost block" data-go="log">記録を開く（バンドの数値・夜の行動）</button>
-  <button class="btn ghost block" style="margin-top:10px" data-go="analyze">分析を見る（負債・スタンプ・バッジ）</button>`;
+  <button class="cta-fixed" data-now="${ctaAction}"><span class="g">${ctaIcon}</span>${ctaLabel}</button>`;
 }
 
 /* ---- 記録 ---- */
@@ -1395,7 +1444,8 @@ const CORR_TESTS=[
   ["入眠サウンドを使った", r=>!!r.soundUsed],
   ["ジムに行った", r=>!!r.gymDone],
   ["お酒を飲んだ", r=>!!r.alcohol],
-  ["昼寝をした", r=>(r.napMin||0)>0]
+  ["昼寝をした", r=>(r.napMin||0)>0],
+  ["一緒に寝た", r=>!!r.sleepWithPartner]
 ];
 // CORR_TESTSの各項目について「該当日/非該当日」のスッキリ度平均差を1回だけ計算し、
 // corrTable/topCorrelationの両方で使い回す（以前は同じ集計を2回別々に行っていた）
@@ -1684,7 +1734,6 @@ function renderKnow(){
   const readN=Object.keys(S.read).length;
   const lead=feat[0];
   el("v-know").innerHTML=`
-  <button class="chip" data-go="home" style="margin-bottom:14px">← 今夜へ戻る</button>
   <div class="mast"><h2>知識</h2><p>睡眠を読む　${readN} / ${ART.length} 本 読了</p></div>
 
   <div class="card" style="background:#0F1626">
@@ -1859,12 +1908,11 @@ document.addEventListener("focusin",e=>{
 document.addEventListener("click",e=>{
   // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
   if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
-  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-tick],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-hideinstall],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore]");
+  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore],[data-partner]");
   if(!t) return;
   const D=t.dataset;
 
   if(D.go){ go(D.go); return; }
-  if(D.hideinstall){ S.game.hideInstall=true; save(); render(); return; }
   if(D.ob){ obNext(Number(D.ob)); return; }
   if(D.goal){ ob.tmp.goal=D.goal; renderOnboard(); return; }
   if(D.c){ const[i,j]=D.c.split(":").map(Number); ob.tmp.chrono=ob.tmp.chrono||{}; ob.tmp.chrono[i]=j; renderOnboard(); return; }
@@ -1877,8 +1925,8 @@ document.addEventListener("click",e=>{
     save(); toast(hm+" を記録しました"); render(); return; }
   if(D.aw!==undefined){ const r=S.records[today()]||(S.records[today()]={});
     r.awakenings = r.awakenings===Number(D.aw)? null : Number(D.aw); save(); render(); return; }
-  if(D.tick){ const d=addDays(today(),1); const r=S.records[d]||(S.records[d]={});
-    r.ticks=r.ticks||{}; r.ticks[D.tick]=!r.ticks[D.tick]; save(); render(); return; }
+  if(D.partner!==undefined){ const dd=soundTargetDate(), r=S.records[dd]||(S.records[dd]={});
+    r.sleepWithPartner=D.partner==="1"; save(); render(); return; }
   if(D.fix){
     if(D.fix==="meal"){ const sh=S.shifts[today()]; if(sh) S.settings.places[sh.place].mealMin=Math.max(8,(S.settings.places[sh.place].mealMin||15)-5); }
     if(D.fix==="wait"){ S.settings.careMin=Math.max(10,S.settings.careMin-5); }
