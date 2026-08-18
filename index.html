@@ -127,15 +127,16 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .hero .mode{text-align:center;margin-top:12px;display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
 .hero .deco{position:absolute;right:-10px;bottom:-6px;width:150px;height:70px;opacity:.22;pointer-events:none}
 
-/* ---- 今夜: いちばん最初に見える最小限のブロック ---- */
-.essentials{position:relative;padding:26px 20px 22px;border:2px solid var(--line);border-radius:28px;margin-bottom:12px;
-  background:
-    linear-gradient(180deg,rgba(26,28,46,.35) 0%,rgba(26,28,46,.55) 55%,rgba(26,28,46,.92) 100%),
-    radial-gradient(120% 90% at 50% -10%,#33396B 0%,#232A4C 45%,#1A1C2E 100%);
-  box-shadow:0 6px 0 rgba(0,0,0,.3);overflow:hidden}
-.essentials .bgphoto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;z-index:0}
-.essentials>*{position:relative;z-index:1}
-.essentials .mascot{display:block;width:76px;height:auto;margin:0 auto 4px}
+/* ---- 今夜: ホーム画面全体に夜空を敷く ---- */
+#v-home{position:relative;margin:-16px -15px 0;padding:16px 15px 24px;overflow:hidden}
+#v-home .bgphoto{position:absolute;top:0;left:0;width:100%;min-height:640px;height:100%;object-fit:cover;object-position:top center;z-index:0}
+#v-home::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(26,28,46,.25) 0%,rgba(26,28,46,.55) 45%,var(--bg) 92%)}
+#v-home>*{position:relative;z-index:1}
+.essentials{position:relative;padding:26px 20px 22px;border:1px solid rgba(255,255,255,.14);border-radius:28px;margin-bottom:12px;
+  background:linear-gradient(180deg,rgba(26,28,46,.35),rgba(26,28,46,.55));
+  backdrop-filter:blur(6px);box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.essentials .mascot{display:block;width:76px;height:auto;margin:0 auto 4px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
 .essentials .streakpill{position:absolute;top:16px;right:16px;display:inline-flex;align-items:center;gap:5px;
   background:rgba(232,195,79,.16);border:1px solid rgba(232,195,79,.4);border-radius:999px;
   padding:5px 11px 5px 7px;font-size:12.5px;font-weight:800;color:var(--amber);z-index:1}
@@ -1028,10 +1029,10 @@ function renderHome(){
     : `帰宅したら照明を少し落として、食事→入浴の順がおすすめ。${unNight(p.bedN)}ぴったりにこだわりすぎなくてOK。`;
 
   el("v-home").innerHTML=`
+  <img class="bgphoto" src="assets/bg-night.png" alt="">
   ${!STORE_OK?`<div class="warnbar">この画面では記録を保存できません。ファイルを端末で開くか、GitHub Pages に置いて開いてください。</div>`:""}
 
   <div class="essentials">
-    <img class="bgphoto" src="assets/bg-night.png" alt="">
     <div class="streakpill"><img src="assets/icon-streak.png" alt=""> 連続${S.game.streak}日</div>
     <img class="mascot" src="assets/mascot-${morningOpen?"awake":"sleeping"}.png" alt="">
     <div class="debtlabel">睡眠負債</div>
