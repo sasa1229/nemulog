@@ -131,20 +131,19 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 #v-home{position:relative;margin:-16px -15px 0;padding:16px 15px 24px;overflow:hidden}
 #v-home .bgphoto{position:absolute;top:0;left:0;width:100%;min-height:640px;height:100%;object-fit:cover;object-position:top center;z-index:0}
 #v-home::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
-  background:linear-gradient(180deg,rgba(26,28,46,.25) 0%,rgba(26,28,46,.55) 45%,var(--bg) 92%)}
+  background:linear-gradient(180deg,rgba(20,20,38,.06) 0%,rgba(20,20,38,.22) 55%,var(--bg) 96%)}
 #v-home>*{position:relative;z-index:1}
-.essentials{position:relative;padding:26px 20px 22px;border:1px solid rgba(255,255,255,.14);border-radius:28px;margin-bottom:12px;
-  background:linear-gradient(180deg,rgba(26,28,46,.35),rgba(26,28,46,.55));
-  backdrop-filter:blur(6px);box-shadow:0 6px 0 rgba(0,0,0,.25)}
-.essentials .mascot{display:block;width:76px;height:auto;margin:0 auto 4px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+.essentials{position:relative;padding:26px 20px 22px;border:1px solid rgba(255,255,255,.16);border-radius:28px;margin-bottom:12px;
+  background:rgba(16,16,32,.14);box-shadow:0 6px 0 rgba(0,0,0,.2)}
+.essentials .mascot{display:block;width:76px;height:auto;margin:0 auto 4px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
 .essentials .streakpill{position:absolute;top:16px;right:16px;display:inline-flex;align-items:center;gap:5px;
-  background:rgba(232,195,79,.16);border:1px solid rgba(232,195,79,.4);border-radius:999px;
-  padding:5px 11px 5px 7px;font-size:12.5px;font-weight:800;color:var(--amber);z-index:1}
+  background:rgba(20,16,10,.5);border:1px solid rgba(232,195,79,.55);border-radius:999px;
+  padding:5px 11px 5px 7px;font-size:12.5px;font-weight:800;color:var(--amber);z-index:1;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .essentials .streakpill img{width:16px;height:16px}
-.essentials .debtlabel{font-size:13px;font-weight:800;color:var(--ink3);text-align:center}
+.essentials .debtlabel{font-size:13px;font-weight:800;color:var(--ink);text-align:center;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .essentials .debtnum{font-size:52px;font-weight:800;line-height:1;text-align:center;margin:4px 0 2px;
-  font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--amber)}
-.essentials .debtsub{text-align:center;font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:16px}
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--amber);text-shadow:0 2px 12px rgba(0,0,0,.55)}
+.essentials .debtsub{text-align:center;font-size:13px;color:var(--ink);font-weight:600;margin-bottom:16px;text-shadow:0 1px 4px rgba(0,0,0,.7)}
 .timeline3{display:flex;gap:8px;margin-bottom:16px}
 .timeline3 .tstep{flex:1;background:rgba(20,23,40,.6);backdrop-filter:blur(2px);border:1px solid var(--line);border-radius:16px;
   padding:12px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
