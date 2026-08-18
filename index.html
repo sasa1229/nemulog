@@ -12,14 +12,15 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
 <title>ねむログ — 夜の帳簿</title>
 <style>
 :root{
-  --bg:#14131A; --bg2:#1A1822; --panel:#211F2B; --panel2:#2A2735; --line:#413C4D;
-  --ink:#E9E3D7; --ink2:#BBB2A3; --ink3:#948B7C;
-  --amber:#F0B368; --amber2:#DE8F4B; --teal:#5FC6B6; --violet:#A794DD;
+  --bg:#1A1C2E; --bg2:#262B45; --panel:#2E2C3D; --panel2:#363048; --line:#454057;
+  --ink:#F5F0E6; --ink2:#CFC9D9; --ink3:#8B87A0;
+  --amber:#E8C34F; --amber2:#E0A944; --teal:#5FC6B6; --violet:#A794DD;
   --rose:#E88B78; --lime:#98D69E; --dawn:#8DA6C6;
-  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",sans-serif;
+  --sans:"M PLUS Rounded 1c",-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
   --r:18px;
   color-scheme:dark;
@@ -125,6 +126,25 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .hero .note{text-align:center;font-size:14.5px;color:var(--ink2);font-weight:600}
 .hero .mode{text-align:center;margin-top:12px;display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
 .hero .deco{position:absolute;right:-10px;bottom:-6px;width:150px;height:70px;opacity:.22;pointer-events:none}
+
+/* ---- 今夜: いちばん最初に見える最小限のブロック ---- */
+.essentials{position:relative;padding:26px 20px 22px;border:2px solid var(--line);border-radius:28px;margin-bottom:12px;
+  background:radial-gradient(120% 90% at 50% -10%,#33396B 0%,#232A4C 45%,#1A1C2E 100%);
+  box-shadow:0 6px 0 rgba(0,0,0,.3);overflow:hidden}
+.essentials .streakpill{position:absolute;top:16px;right:16px;display:inline-flex;align-items:center;gap:5px;
+  background:rgba(232,195,79,.16);border:1px solid rgba(232,195,79,.4);border-radius:999px;
+  padding:6px 11px;font-size:12.5px;font-weight:800;color:var(--amber)}
+.essentials .debtlabel{font-size:13px;font-weight:800;color:var(--ink3);text-align:center}
+.essentials .debtnum{font-size:52px;font-weight:800;line-height:1;text-align:center;margin:4px 0 2px;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--amber)}
+.essentials .debtsub{text-align:center;font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:16px}
+.timeline3{display:flex;gap:8px;margin-bottom:16px}
+.timeline3 .tstep{flex:1;background:rgba(20,23,40,.55);border:1px solid var(--line);border-radius:16px;
+  padding:12px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+.timeline3 .tstep.key{border-color:rgba(232,195,79,.55);background:rgba(232,195,79,.1)}
+.timeline3 .tstep b{font-size:16px;font-variant-numeric:tabular-nums}
+.timeline3 .tstep span{font-size:10.5px;color:var(--ink3);font-weight:700}
+.homemore-toggle{width:100%;text-align:center;padding:12px 0;color:var(--ink3);font-weight:800;font-size:13.5px;margin-bottom:14px}
 
 /* ---- 今夜: 最上部/固定CTA ---- */
 .cta-primary{position:relative;display:flex;align-items:center;gap:16px;width:100%;min-height:92px;
@@ -884,7 +904,9 @@ const ICONS={
   shieldCheck:'<path d="M12 3l7 3v5.5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6Z"/><path d="M9 12l2 2 4-4.3"/>',
   ear:'<path d="M8 13.5c0-4.5 2.2-9.5 7-9.5a5.5 5.5 0 0 1 5.5 5.5c0 2-1 3-2.5 3.8-1.2.6-1.5 1.2-1.5 2.2 0 1.4-1.1 2.5-2.5 2.5S11 16.9 11 15.5"/><path d="M8 13.5c0 2.5.5 5 2 7"/>',
   code:'<path d="M9 8l-4.5 4L9 16M15 8l4.5 4-4.5 4"/>',
-  eye:'<path d="M2 12S5.5 5.5 12 5.5 22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/>'
+  eye:'<path d="M2 12S5.5 5.5 12 5.5 22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/>',
+  flame:'<path d="M12 2.5c1.2 3-1.4 4.2-1.4 6.9a3.4 3.4 0 0 0 6.8 0c0-1-.4-1.8-.8-2.4 1.5.5 2.5 2.1 2.5 4.1a5.1 5.1 0 0 1-10.2 0c0-4.2 2.5-6 3.1-8.6Z"/>',
+  cup:'<path d="M5 8h11v6a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4Z"/><path d="M16 9.5h1.5a2.3 2.3 0 0 1 0 4.6H16"/><path d="M8 3.5c-.6.9.6 1.3.6 2.2M11.5 3.5c-.6.9.6 1.3.6 2.2"/>'
 };
 function icon(name,size){
   return `<svg viewBox="0 0 24 24" width="${size||20}" height="${size||20}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||""}</svg>`;
@@ -1001,22 +1023,36 @@ function renderHome(){
   el("v-home").innerHTML=`
   ${!STORE_OK?`<div class="warnbar">この画面では記録を保存できません。ファイルを端末で開くか、GitHub Pages に置いて開いてください。</div>`:""}
 
-  <button class="cta-primary" data-now="${ctaAction}">
-    <span class="icowrap">
-      <span class="spark s1">${icon("sparkle",9)}</span>
-      <span class="g">${icon(ctaIcon,28)}</span>
-      <span class="spark s2">${icon("sparkle",7)}</span>
-    </span>
-    <span class="tx"><b>${ctaDoneTime?ctaLabel+"済み":ctaLabel}</b><span>${h(ctaSub)}</span></span>
-    <span class="arrow">›</span>
-  </button>
-  ${ctaDoneTime?`<div class="cta-fix"><span>押し忘れたときは時刻を直せます</span><input type="time" id="cta-fixtime" value="${ctaDoneTime}"></div>`:""}
-  ${morningOpen?`<button class="morning-link" data-go="log">
-    <span class="g">${icon("pencil",17)}</span>
-    <span class="tx"><b>朝の記録へ</b><span>スッキリ度・寝つきなど3問</span></span>
-    <span class="arrow">›</span>
-  </button>`:""}
+  <div class="essentials">
+    <div class="streakpill">${icon("flame",14)} 連続${S.game.streak}日</div>
+    <div class="debtlabel">睡眠負債</div>
+    <div class="debtnum">${db.min<=0?"なし":dur(db.min)}</div>
+    <div class="debtsub">必要睡眠 ${dur(p.need)} ／ ${p.wakeTarget.hm}起床目標</div>
+    <div class="timeline3">
+      <div class="tstep"><span class="g">${icon("cup",18)}</span><b>${cafe}</b><span>カフェイン終了</span></div>
+      <div class="tstep"><span class="g">${icon("bath",18)}</span><b>${unNight(p.bathPlan.bathStartN)}</b><span>入浴</span></div>
+      <div class="tstep key"><span class="g">${icon("moon",18)}</span><b>${unNight(p.bedN)}</b><span>就寝</span></div>
+    </div>
+    <button class="cta-primary" data-now="${ctaAction}">
+      <span class="icowrap">
+        <span class="spark s1">${icon("sparkle",9)}</span>
+        <span class="g">${icon(ctaIcon,28)}</span>
+        <span class="spark s2">${icon("sparkle",7)}</span>
+      </span>
+      <span class="tx"><b>${ctaDoneTime?ctaLabel+"済み":ctaLabel}</b><span>${h(ctaSub)}</span></span>
+      <span class="arrow">›</span>
+    </button>
+    ${ctaDoneTime?`<div class="cta-fix"><span>押し忘れたときは時刻を直せます</span><input type="time" id="cta-fixtime" value="${ctaDoneTime}"></div>`:""}
+    ${morningOpen?`<button class="morning-link" data-go="log">
+      <span class="g">${icon("pencil",17)}</span>
+      <span class="tx"><b>朝の記録へ</b><span>スッキリ度・寝つきなど3問</span></span>
+      <span class="arrow">›</span>
+    </button>`:""}
+  </div>
 
+  <button class="homemore-toggle" data-homemore="1">${homeMore?"詳しくをたたむ ▲":"詳しく見る（今夜の段取り・シフト・コツ） ▼"}</button>
+
+  ${!homeMore?"":`
   <div class="hero">
     <div class="label">今夜の目標就寝</div>
     <div class="time">${unNight(p.bedN)}</div>
@@ -1095,15 +1131,14 @@ function renderHome(){
     </ul>
   </div>
 
-  <div class="row wrap" style="justify-content:center;margin:2px 0 15px">
-    <span class="streak">連続 <b>${S.game.streak}</b> 日</span>
-    <span class="streak">負債 <b>${db.min<=0?"なし":dur(db.min)}</b></span>
-    ${pr?`<span class="streak">昨夜 <b>${pr.ok===null?"免除日":(pr.ok?"達成":"未達")}</b></span>`:""}
-  </div>`;
+  ${pr?`<div class="row wrap" style="justify-content:center;margin:2px 0 15px">
+    <span class="streak">昨夜 <b>${pr.ok===null?"免除日":(pr.ok?"達成":"未達")}</b></span>
+  </div>`:""}
+  `}`;
 }
 
 /* ---- 記録 ---- */
-let logDate=null, logMore=false, logTab=null;
+let logDate=null, logMore=false, logTab=null, homeMore=false;
 function logTargetDate(){ return logTab==="morning" ? (logDate||today()) : (logDate||soundTargetDate()); }
 function faceRow(k,v){
   return `<div class="faces">${[1,2,3,4,5].map(n=>`<button data-sc="${k}:${n}" aria-pressed="${v===n}">${faceIcon(n,24)}<b>${n}</b></button>`).join("")}</div>`;
@@ -2106,7 +2141,7 @@ document.addEventListener("focusout",e=>{
 document.addEventListener("click",e=>{
   // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
   if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
-  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore],[data-partner],[data-logtab],[data-psetup]");
+  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore],[data-partner],[data-logtab],[data-psetup],[data-homemore]");
   if(!t) return;
   const D=t.dataset;
 
@@ -2215,6 +2250,7 @@ document.addEventListener("click",e=>{
   if(D.expstart!==undefined){ startExperiment(Number(el("exp-test").value), Number(el("exp-days").value)); toast("実験を始めました"); render(); return; }
   if(D.expcancel!==undefined){ S.experiment=null; save(); render(); return; }
   if(D.logmore!==undefined){ logMore=!logMore; renderLog(); return; }
+  if(D.homemore!==undefined){ homeMore=!homeMore; renderHome(); return; }
 });
 function obNext(step){
   if(step===1){
