@@ -129,19 +129,26 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 
 /* ---- 今夜: いちばん最初に見える最小限のブロック ---- */
 .essentials{position:relative;padding:26px 20px 22px;border:2px solid var(--line);border-radius:28px;margin-bottom:12px;
-  background:radial-gradient(120% 90% at 50% -10%,#33396B 0%,#232A4C 45%,#1A1C2E 100%);
+  background:
+    linear-gradient(180deg,rgba(26,28,46,.35) 0%,rgba(26,28,46,.55) 55%,rgba(26,28,46,.92) 100%),
+    radial-gradient(120% 90% at 50% -10%,#33396B 0%,#232A4C 45%,#1A1C2E 100%);
   box-shadow:0 6px 0 rgba(0,0,0,.3);overflow:hidden}
+.essentials .bgphoto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.55;z-index:0}
+.essentials>*{position:relative;z-index:1}
+.essentials .mascot{display:block;width:76px;height:auto;margin:0 auto 4px}
 .essentials .streakpill{position:absolute;top:16px;right:16px;display:inline-flex;align-items:center;gap:5px;
   background:rgba(232,195,79,.16);border:1px solid rgba(232,195,79,.4);border-radius:999px;
-  padding:6px 11px;font-size:12.5px;font-weight:800;color:var(--amber)}
+  padding:5px 11px 5px 7px;font-size:12.5px;font-weight:800;color:var(--amber);z-index:1}
+.essentials .streakpill img{width:16px;height:16px}
 .essentials .debtlabel{font-size:13px;font-weight:800;color:var(--ink3);text-align:center}
 .essentials .debtnum{font-size:52px;font-weight:800;line-height:1;text-align:center;margin:4px 0 2px;
   font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--amber)}
 .essentials .debtsub{text-align:center;font-size:13px;color:var(--ink2);font-weight:600;margin-bottom:16px}
 .timeline3{display:flex;gap:8px;margin-bottom:16px}
-.timeline3 .tstep{flex:1;background:rgba(20,23,40,.55);border:1px solid var(--line);border-radius:16px;
+.timeline3 .tstep{flex:1;background:rgba(20,23,40,.6);backdrop-filter:blur(2px);border:1px solid var(--line);border-radius:16px;
   padding:12px 6px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
-.timeline3 .tstep.key{border-color:rgba(232,195,79,.55);background:rgba(232,195,79,.1)}
+.timeline3 .tstep.key{border-color:rgba(232,195,79,.55);background:rgba(232,195,79,.14)}
+.timeline3 .tstep img{width:26px;height:26px}
 .timeline3 .tstep b{font-size:16px;font-variant-numeric:tabular-nums}
 .timeline3 .tstep span{font-size:10.5px;color:var(--ink3);font-weight:700}
 .homemore-toggle{width:100%;text-align:center;padding:12px 0;color:var(--ink3);font-weight:800;font-size:13.5px;margin-bottom:14px}
@@ -1024,14 +1031,16 @@ function renderHome(){
   ${!STORE_OK?`<div class="warnbar">この画面では記録を保存できません。ファイルを端末で開くか、GitHub Pages に置いて開いてください。</div>`:""}
 
   <div class="essentials">
-    <div class="streakpill">${icon("flame",14)} 連続${S.game.streak}日</div>
+    <img class="bgphoto" src="assets/bg-night.png" alt="">
+    <div class="streakpill"><img src="assets/icon-streak.png" alt=""> 連続${S.game.streak}日</div>
+    <img class="mascot" src="assets/mascot-${morningOpen?"awake":"sleeping"}.png" alt="">
     <div class="debtlabel">睡眠負債</div>
     <div class="debtnum">${db.min<=0?"なし":dur(db.min)}</div>
     <div class="debtsub">必要睡眠 ${dur(p.need)} ／ ${p.wakeTarget.hm}起床目標</div>
     <div class="timeline3">
-      <div class="tstep"><span class="g">${icon("cup",18)}</span><b>${cafe}</b><span>カフェイン終了</span></div>
-      <div class="tstep"><span class="g">${icon("bath",18)}</span><b>${unNight(p.bathPlan.bathStartN)}</b><span>入浴</span></div>
-      <div class="tstep key"><span class="g">${icon("moon",18)}</span><b>${unNight(p.bedN)}</b><span>就寝</span></div>
+      <div class="tstep"><img src="assets/icon-coffee.png" alt=""><b>${cafe}</b><span>カフェイン終了</span></div>
+      <div class="tstep"><img src="assets/icon-bath.png" alt=""><b>${unNight(p.bathPlan.bathStartN)}</b><span>入浴</span></div>
+      <div class="tstep key"><img src="assets/icon-moon.png" alt=""><b>${unNight(p.bedN)}</b><span>就寝</span></div>
     </div>
     <button class="cta-primary" data-now="${ctaAction}">
       <span class="icowrap">
