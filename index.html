@@ -94,7 +94,9 @@ nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(18
 .btn svg{vertical-align:-3px;margin-right:2px}
 .btn:active{transform:translateY(3px);box-shadow:none}
 .chip{border:2px solid var(--line);background:var(--panel2);color:var(--ink2);
-  padding:11px 16px;border-radius:99px;font-size:15.5px;font-weight:700;min-height:46px}
+  padding:11px 16px;border-radius:99px;font-size:15.5px;font-weight:700;min-height:46px;white-space:nowrap}
+.row.spread>.chip{flex-shrink:0}
+.row.spread>.small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
 .chip[aria-pressed="true"]{background:linear-gradient(180deg,var(--amber),var(--amber2));
   border-color:var(--amber);color:#231605;box-shadow:0 3px 0 #B96F22}
 label.f{display:block;margin:14px 0 0}
