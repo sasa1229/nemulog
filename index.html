@@ -1147,7 +1147,7 @@ function renderHome(){
 }
 
 /* ---- 記録 ---- */
-let logDate=null, logMore=false, logTab=null, homeMore=false;
+let logDate=null, logMore=false, logTab=null, homeMore=false, analyzeMore=false;
 function logTargetDate(){ return logTab==="morning" ? (logDate||today()) : (logDate||soundTargetDate()); }
 function faceRow(k,v){
   return `<div class="faces">${[1,2,3,4,5].map(n=>`<button data-sc="${k}:${n}" aria-pressed="${v===n}">${faceIcon(n,24)}<b>${n}</b></button>`).join("")}</div>`;
@@ -1299,7 +1299,10 @@ function renderLogNight(d,r){
     <p class="tiny">飛ばしてもOK。行動と休養感の相関分析に使います。</p>
   </div>
 
-  <div class="card">
+  <button class="btn ghost block" data-logmore="1">${logMore?"詳しい記録をたたむ ▲":"もっと記録する（入浴・食事・行動メモ）▼"}</button>
+
+  ${!logMore?"":`
+  <div class="card" style="margin-top:14px">
     <div class="eyebrow-h">${icon("clipboard",16)} ワンタップ行動ログ</div>
     <div class="row wrap">
       ${["tub:湯船に入る","shower:シャワー","none:入浴なし"].map(s=>{const[k,n]=s.split(":");
@@ -1335,7 +1338,7 @@ function renderLogNight(d,r){
       <button class="chip" data-t="partnerSnore" aria-pressed="${!!r.partnerSnore}">${icon("ear",13)} いびき・寝返りが気になる</button>
     </div>
     <p class="tiny" style="margin-top:8px">スキップもOK</p>
-  </div>`:""}
+  </div>`:""}`}
 
   <button class="btn block" style="margin-top:14px" data-save="1">夜の記録を保存</button>`;
 }
@@ -1607,6 +1610,9 @@ function renderAnalyze(){
     <div class="suggest"><b>来週への提案</b>${h(wr.suggestion)}</div>
   </div>
 
+  <button class="btn ghost block" data-analyzemore="1">${analyzeMore?"詳しい分析をたたむ ▲":"詳しい分析を見る（負債の推移・相関・バッジなど） ▼"}</button>
+
+  ${!analyzeMore?"":`
   ${expResultCard()}
 
   <div class="card">
@@ -1672,7 +1678,7 @@ function renderAnalyze(){
     <div class="eyebrow">バッジ</div>
     <div class="row wrap">${BADGES.map(b=>`<span class="chip" aria-pressed="${S.game.badges.includes(b.id)}">${h(b.n)}</span>`).join("")}</div>
     <p class="tiny" style="margin-top:8px">${h(BADGES.filter(b=>!S.game.badges.includes(b.id)).map(b=>b.n+"："+b.d).join(" / "))}</p>
-  </div>`;
+  </div>`}`;
 }
 const CORR_TESTS=[
   ["湯船に入った", r=>r.bathType==="tub"],
@@ -2150,7 +2156,7 @@ document.addEventListener("focusout",e=>{
 document.addEventListener("click",e=>{
   // シートの外側（背景）をタップしたときだけ閉じる。内側の操作は通す
   if(e.target && e.target.classList && e.target.classList.contains("sheet")){ el("sheet").innerHTML=""; return; }
-  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore],[data-partner],[data-logtab],[data-psetup],[data-homemore]");
+  const t=e.target.closest("[data-go],[data-now],[data-aw],[data-ob],[data-goal],[data-c],[data-fix],[data-day],[data-sc],[data-t],[data-bath],[data-mw],[data-save],[data-bandsheet],[data-bulksheet],[data-bulkparse],[data-bandsave],[data-codeparse],[data-bandparse],[data-mon],[data-edit],[data-close],[data-esave],[data-edel],[data-gym],[data-parse],[data-ov],[data-art],[data-read],[data-ssave],[data-dl],[data-export],[data-import],[data-pl],[data-sdstart],[data-sdstop],[data-sdlow],[data-sdwake],[data-expstart],[data-expcancel],[data-logmore],[data-partner],[data-logtab],[data-psetup],[data-homemore],[data-analyzemore]");
   if(!t) return;
   const D=t.dataset;
 
@@ -2260,6 +2266,7 @@ document.addEventListener("click",e=>{
   if(D.expcancel!==undefined){ S.experiment=null; save(); render(); return; }
   if(D.logmore!==undefined){ logMore=!logMore; renderLog(); return; }
   if(D.homemore!==undefined){ homeMore=!homeMore; renderHome(); return; }
+  if(D.analyzemore!==undefined){ analyzeMore=!analyzeMore; renderAnalyze(); return; }
 });
 function obNext(step){
   if(step===1){
