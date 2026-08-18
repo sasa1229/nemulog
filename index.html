@@ -31,7 +31,7 @@ body{
   background:var(--bg); color:var(--ink);
   font-family:var(--sans); font-size:17px; line-height:1.75; font-weight:500;
   letter-spacing:.005em; -webkit-text-size-adjust:100%;
-  padding-bottom:96px; overscroll-behavior-y:none;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom)); overscroll-behavior-y:none;
   transition:filter .6s ease;
 }
 /* 深夜（23:00〜5:00）は自動でさらに落ち着いた色合いにする。設定でON/OFF可 */
