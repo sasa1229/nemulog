@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#101728">
+<meta name="theme-color" content="#1A1C2E">
 <meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -47,7 +47,7 @@ a{color:var(--dawn)}
 /* ---- shell ---- */
 header.top{
   padding:14px 18px 12px; border-bottom:1px solid var(--line);
-  background:linear-gradient(180deg,#1A2440,#101728); position:sticky; top:0; z-index:20;
+  background:linear-gradient(180deg,#262B45,#1A1C2E); position:sticky; top:0; z-index:20;
   padding-top:max(14px,env(safe-area-inset-top));
 }
 header.top .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -73,7 +73,7 @@ nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(18
 @keyframes fade{from{opacity:0}to{opacity:1}}
 
 /* ---- primitives ---- */
-.card{background:linear-gradient(180deg,var(--panel),#19243F);border:1px solid var(--line);
+.card{background:linear-gradient(180deg,var(--panel),#262B45);border:1px solid var(--line);
   border-radius:var(--r);padding:18px;margin:0 0 15px;box-shadow:0 3px 0 rgba(0,0,0,.25);
   overflow:hidden;min-width:0}
 .eyebrow{font-size:13px;font-weight:800;letter-spacing:.1em;color:var(--amber);margin:0 0 10px}
@@ -99,7 +99,7 @@ nav.tabs button[aria-current="true"]{color:#20160A;background:linear-gradient(18
   border-color:var(--amber);color:#231605;box-shadow:0 3px 0 #B96F22}
 label.f{display:block;margin:14px 0 0}
 label.f span{display:block;font-size:14.5px;font-weight:700;color:var(--ink2);margin-bottom:7px}
-input,select,textarea{width:100%;max-width:100%;min-width:0;background:#0E1526;
+input,select,textarea{width:100%;max-width:100%;min-width:0;background:#20223A;
   border:2px solid var(--line);border-radius:13px;padding:13px 12px;display:block}
 input[type="time"],input[type="number"],input[type="file"]{-webkit-appearance:none;appearance:none}
 input[type="time"]{text-align:center;padding-left:6px;padding-right:6px}
@@ -116,7 +116,7 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 
 /* ---- signature: 時刻表 ---- */
 .hero{position:relative;padding:24px 18px 20px;border:2px solid var(--line);border-radius:26px;margin-bottom:15px;
-  background:radial-gradient(130% 100% at 50% 0%,#2A3A66 0%,#1B2745 55%,#141D33 100%);
+  background:radial-gradient(130% 100% at 50% 0%,#33396B 0%,#232A4C 55%,#1A1C2E 100%);
   box-shadow:0 6px 0 rgba(0,0,0,.3);overflow:hidden}
 .hero .label{font-size:14px;font-weight:800;letter-spacing:.14em;color:var(--amber);text-align:center}
 .hero .time{font-size:78px;font-weight:800;line-height:1;text-align:center;margin:8px 0 6px;
@@ -170,9 +170,9 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
   margin:-6px 0 15px;font-size:13.5px;color:var(--ink2);font-weight:700}
 .cta-fix input{width:auto;flex:0 0 auto;padding:6px 10px;font-size:14px;min-height:0}
 .morning-link{display:flex;align-items:center;gap:13px;width:100%;
-  background:linear-gradient(180deg,var(--panel),#19243F);border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel),#262B45);border:1px solid var(--line);
   border-radius:20px;padding:13px 16px;margin:-6px 0 15px;box-shadow:0 3px 0 rgba(0,0,0,.25);text-align:left}
-.morning-link .g{width:38px;height:38px;border-radius:50%;background:#0E1526;border:1px solid var(--line);
+.morning-link .g{width:38px;height:38px;border-radius:50%;background:#20223A;border:1px solid var(--line);
   color:var(--dawn);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .morning-link .tx{flex:1}
 .morning-link .tx b{display:block;font-size:15.5px;font-weight:800;color:var(--ink)}
@@ -206,7 +206,7 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 
 /* ---- 遅番情報 3分割 ---- */
 .late3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
-.late3 div{background:#0E1526;border:1px solid var(--line);border-radius:14px;padding:12px 6px}
+.late3 div{background:#20223A;border:1px solid var(--line);border-radius:14px;padding:12px 6px}
 .late3 .g{width:30px;height:30px;border-radius:50%;background:var(--panel2);color:var(--amber);
   display:flex;align-items:center;justify-content:center;margin:0 auto 6px}
 .late3 b{display:block;font-size:14.5px;font-weight:800}
@@ -214,10 +214,10 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 
 /* ---- ショートカット2枚 ---- */
 .shortrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px}
-.shortrow button{background:linear-gradient(180deg,var(--panel),#19243F);border:2px solid var(--line);
+.shortrow button{background:linear-gradient(180deg,var(--panel),#262B45);border:2px solid var(--line);
   border-radius:18px;padding:14px 14px;text-align:left;box-shadow:0 3px 0 rgba(0,0,0,.25)}
 .shortrow button .top{display:flex;align-items:center;justify-content:space-between}
-.shortrow button .g{width:34px;height:34px;border-radius:50%;background:#0E1526;border:1px solid var(--line);
+.shortrow button .g{width:34px;height:34px;border-radius:50%;background:#20223A;border:1px solid var(--line);
   color:var(--amber);display:flex;align-items:center;justify-content:center}
 .shortrow button b{display:block;font-size:14.5px;font-weight:800;margin-top:10px}
 .shortrow button span{display:block;font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px}
@@ -252,7 +252,7 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 
 /* ---- 参考カードの3分割 ---- */
 .reftable{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;margin-top:10px}
-.reftable div{background:#0E1526;border:1px solid var(--line);border-radius:12px;padding:10px 4px}
+.reftable div{background:#20223A;border:1px solid var(--line);border-radius:12px;padding:10px 4px}
 .reftable .g{color:var(--dawn);margin:0 auto 4px}
 .reftable b{display:block;font-size:16px;font-weight:800}
 .reftable span{font-size:11px;color:var(--ink3);font-weight:700}
@@ -275,18 +275,18 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--rose),var(--amber));transition:width .7s ease}
 .big{font-size:44px;white-space:nowrap;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
 .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center}
-.stat div{background:#0E1526;border:1px solid var(--line);border-radius:14px;padding:12px 6px}
+.stat div{background:#20223A;border:1px solid var(--line);border-radius:14px;padding:12px 6px}
 .stat div b{display:block;font-size:26px;font-weight:800}
 .stat div span{font-size:12.5px;font-weight:700;color:var(--ink3)}
 
 /* ---- stamps ---- */
 .stamps{display:flex;gap:6px}
 .stamps i{flex:1;min-width:0;height:46px;border:2px dashed var(--line);border-radius:11px;display:grid;place-items:center;
-  font-size:17px;font-weight:800;color:var(--ink3);font-style:normal;background:#0E1526}
+  font-size:17px;font-weight:800;color:var(--ink3);font-style:normal;background:#20223A}
 .stamps i.on{border-style:solid;border-color:var(--amber);color:#231605;
   background:linear-gradient(180deg,var(--amber),var(--amber2));box-shadow:0 3px 0 #B96F22;animation:pop .35s ease}
 @keyframes pop{0%{transform:scale(.6) rotate(-12deg)}70%{transform:scale(1.12)}100%{transform:none}}
-.streak{display:inline-flex;align-items:center;gap:6px;background:#0E1526;border:2px solid var(--line);
+.streak{display:inline-flex;align-items:center;gap:6px;background:#20223A;border:2px solid var(--line);
   border-radius:99px;padding:7px 14px;font-weight:800;font-size:15px}
 .streak b{color:var(--amber);font-size:19px}
 
@@ -295,12 +295,12 @@ textarea{min-height:80px;resize:vertical;font-weight:500}
 .mast h2{font-size:30px;letter-spacing:.02em}
 .mast p{margin:6px 0 0;font-size:14px;font-weight:700;color:var(--ink3)}
 .lead{border:2px solid var(--line);border-radius:22px;overflow:hidden;margin-bottom:15px;
-  background:linear-gradient(150deg,#2C3D6B,#1A2440);box-shadow:0 5px 0 rgba(0,0,0,.3)}
+  background:linear-gradient(150deg,#33396B,#262B45);box-shadow:0 5px 0 rgba(0,0,0,.3)}
 .lead .body{padding:18px}
 .lead h3{font-size:24px;margin:8px 0 10px}
 .artgrid{display:grid;gap:12px}
 .art{border:2px solid var(--line);border-radius:18px;padding:15px 16px;
-  background:linear-gradient(180deg,var(--panel),#19243F);text-align:left;width:100%;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+  background:linear-gradient(180deg,var(--panel),#262B45);text-align:left;width:100%;box-shadow:0 3px 0 rgba(0,0,0,.25)}
 .art .no{font-size:13px;font-weight:800;color:var(--amber);letter-spacing:.06em}
 .art h4{font-size:18.5px;margin:7px 0 6px}
 .art.locked{opacity:.45}
@@ -313,11 +313,11 @@ article.read h2{font-size:28px;line-height:1.45;margin:10px 0 12px}
 .kicker{font-size:13.5px;font-weight:800;color:var(--amber)}
 article.read .kicker{font-size:13.5px;font-weight:800;color:var(--amber)}
 article.read .leadp{font-size:17px;font-weight:700;border-left:4px solid var(--amber);padding-left:14px;margin:16px 0}
-article.read .concl{background:#0E1526;border:2px solid var(--amber);border-radius:16px;padding:15px 16px;margin:18px 0}
+article.read .concl{background:#20223A;border:2px solid var(--amber);border-radius:16px;padding:15px 16px;margin:18px 0}
 article.read .concl b{font-size:13.5px;letter-spacing:.1em;color:var(--amber);display:block;margin-bottom:7px}
 article.read h3{font-size:19.5px;margin:26px 0 8px;color:var(--amber)}
 article.read p{margin:0 0 14px;font-weight:500}
-article.read .fig{border:2px solid var(--line);border-radius:16px;padding:16px;margin:18px 0;background:#0E1526}
+article.read .fig{border:2px solid var(--line);border-radius:16px;padding:16px;margin:18px 0;background:#20223A}
 article.read .src{font-size:13.5px;color:var(--ink3);margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
 article.read .src div{margin-bottom:5px;word-break:break-all}
 
@@ -325,7 +325,7 @@ article.read .src div{margin-bottom:5px;word-break:break-all}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .cal .h{font-size:11px;font-weight:800;color:var(--ink3);text-align:center}
 .cal .d{border:2px solid var(--line);border-radius:10px;min-height:48px;min-width:0;padding:4px 2px;font-size:10px;
-  background:#0E1526;text-align:center;font-weight:600;overflow:hidden}
+  background:#20223A;text-align:center;font-weight:600;overflow:hidden}
 .cal .d b{font-size:13px;font-weight:800;display:block;color:var(--ink)}
 .cal .d.late{border-color:var(--amber);background:rgba(255,193,94,.14)}
 .cal .d.work{border-color:var(--dawn);background:rgba(121,180,240,.1)}
@@ -348,7 +348,7 @@ ul.plain{padding-left:20px;margin:10px 0}ul.plain li{margin-bottom:8px}
 .kv{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:16px;font-weight:600}
 .kv:last-child{border:none}
 .kv b{font-variant-numeric:tabular-nums;font-weight:800}
-.suggest{background:#0E1526;border:2px solid var(--amber);border-radius:16px;padding:14px 16px;margin-top:14px}
+.suggest{background:#20223A;border:2px solid var(--amber);border-radius:16px;padding:14px 16px;margin-top:14px}
 .suggest b{font-size:13px;letter-spacing:.08em;color:var(--amber);display:block;margin-bottom:6px;font-weight:800}
 .rankgrade{display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:18px;
   font-size:32px;font-weight:800;background:linear-gradient(180deg,var(--amber),var(--amber2));color:#231605;
@@ -1390,7 +1390,7 @@ function bandSheet(date){
     ${pair("x-light","浅い",lh,lm)}
     ${pair("x-deep","深い",dh,dm)}
     ${f("x-score","睡眠スコア",r.bandScore,0,100,1,"点")}
-    <div class="card" style="margin:16px 0 0;background:#0E1526">
+    <div class="card" style="margin:16px 0 0;background:#20223A">
       <div class="eyebrow">自動計算</div>
       <div class="row spread"><span class="small">総睡眠時間（レム＋浅い＋深い）</span><b id="x-total" style="font-size:22px">—</b></div>
     </div>
@@ -2098,7 +2098,7 @@ function renderSet(){
     <div class="eyebrow">Xiaomiの数値をアプリに渡す方法</div>
     <p class="small" style="margin:0 0 10px"><b>いちばん確実：</b>Mi Fitness の睡眠画面を見ながら、記録タブの数値欄に打つか、画面の文字をコピーして「この文章から取り込む」に貼る。1日20秒ほどです。</p>
     <p class="small" style="margin:0 0 10px"><b>自動化したいとき：</b>iPhoneのショートカットで、この形のURLを開くようにします。開くだけでその日の記録に入ります。</p>
-    <div style="background:#0E1526;border:2px solid var(--line);border-radius:12px;padding:12px;font-family:var(--mono);font-size:13px;word-break:break-all">?band=430,80,95,2,82&date=${today()}</div>
+    <div style="background:#20223A;border:2px solid var(--line);border-radius:12px;padding:12px;font-family:var(--mono);font-size:13px;word-break:break-all">?band=430,80,95,2,82&date=${today()}</div>
     <p class="tiny" style="margin-top:8px">数字は順に「総睡眠時間・深い・レム・覚醒回数・スコア」（すべて分と回）。後ろのdateは省略できます（省略時は今日）。</p>
     <div class="divider"></div>
     <p class="small" style="margin:0 0 8px"><b>ショートカットの作り方</b></p>
